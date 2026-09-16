@@ -1,0 +1,111 @@
+# Arquitetura
+
+## Estado Atual
+
+O projeto esta em Laravel 12.69.2 com PHP 8.3.33, Composer 2.9.5, PHPUnit 11 e frontend Vite/Tailwind. O Node usado pelo projeto fica em `.tools/node-current` e e ativado com `source .node-env`.
+
+O bootstrap do Laravel ja esta funcional via Apache em `https://maicon.receiv.it/` e tambem pode ser executado localmente com `php artisan serve`.
+
+## Decisoes Base
+
+- Backend: Laravel 12.
+- Interface: Blade, Vite e Tailwind CSS.
+- Banco alvo: MySQL para desenvolvimento/producao.
+- Testes: devem ser executados contra banco isolado. Se forem executados em MySQL, use um database proprio de teste e nunca o banco de desenvolvimento/producao.
+- Timezone da aplicacao: `America/Sao_Paulo`.
+- Estrategia de datas futuras: persistir instantes de partidas em UTC e converter para `America/Sao_Paulo` na apresentacao.
+- Provedor esportivo planejado: API-Football atras de uma interface.
+- Provedor de transmissao planejado: TheSportsDB antes de qualquer fallback por IA.
+- IA planejada: OpenAI Responses API apenas como fallback para transmissao ausente, conflitante ou vencida.
+- Publicacao planejada: modo manual por padrao; pagina publica exibe somente registros publicados.
+
+## Fluxo Planejado
+
+1. Modelar competicoes, times, partidas, emissoras e transmissoes.
+2. Buscar partidas via contrato de provedor esportivo API-Football.
+3. Sincronizar os dados de forma idempotente.
+4. Resolver transmissoes via TheSportsDB e, somente quando necessario, OpenAI.
+5. Avaliar confiabilidade e manter historico de evidencias.
+6. Revisar e publicar rodadas manualmente no Filament.
+7. Exibir a agenda publica somente com dados persistidos e publicados.
+8. Automatizar atualizacoes via Scheduler/jobs.
+
+## Modelo de Dominio
+
+### `competitions`
+
+Representa campeonatos e temporadas importados de um provedor. `provider + external_id` e unico para permitir que a API-Football, ou outro provedor futuro, tenha seus proprios identificadores sem conflito global. `slug` e unico para URLs e filtros internos.
+
+### `teams`
+
+Representa clubes ou selecoes. Tambem usa `provider + external_id` como chave unica composta. `logo_url` e opcional porque a pagina publica nao deve depender de imagem remota para renderizar corretamente.
+
+### `football_fixtures`
+
+Representa uma partida. Relaciona campeonato, mandante e visitante. `starts_at` deve guardar o instante do jogo em UTC; a apresentacao converte para `America/Sao_Paulo`. `raw_payload` e opcional e deve ser usado apenas quando ajudar auditoria ou diagnostico da integracao.
+
+Tambem guarda estados independentes do fluxo de transmissao:
+
+- `resolution_status`: `pending`, `processing`, `resolved`, `not_found`, `uncertain`, `conflicting` ou `error`.
+- `review_status`: `pending`, `approved` ou `rejected`.
+- `publication_status`: `draft`, `published` ou `unpublished`.
+
+Um jogo pode estar resolvido e ainda assim continuar em rascunho aguardando aprovacao humana.
+
+### `broadcasters`
+
+Catalogo de emissoras/plataformas. O campo `type` aceita `tv_open`, `tv_closed`, `streaming`, `youtube` ou `other`.
+
+### `fixture_provider_mappings`
+
+Mapeia uma partida local para eventos externos de provedores diferentes, como API-Football e TheSportsDB. Isso e necessario porque os provedores nao compartilham os mesmos IDs.
+
+### `broadcast_sources`
+
+Guarda o historico de consultas e evidencias de transmissao. Pode representar uma resposta da TheSportsDB, uma pesquisa da OpenAI ou uma correcao manual. A tabela preserva canais, URLs, resumo da evidencia, resposta bruta sanitizada, modelo utilizado, tokens/chamadas de busca quando disponiveis e confiabilidade calculada pela aplicacao.
+
+### `fixture_broadcasts`
+
+Relaciona uma partida a uma emissora em um pais. A restricao unica `football_fixture_id + broadcaster_id + country_code` impede duplicidade durante sincronizacoes. Como a transmissao possui fonte, confianca, revisao e origem, ela e modelada como entidade propria em vez de pivot anonima.
+
+Essa tabela representa a transmissao selecionada/publicavel. O historico completo permanece em `broadcast_sources`.
+
+### `publication_settings`
+
+Guarda o modo persistente de publicacao. O padrao e `manual`; `automatic` sera habilitado futuramente pelo painel quando o processo estiver validado.
+
+### `round_publications`
+
+Controla revisao e publicacao por competicao, temporada e rodada. Sera usado pelo Filament para aprovar/publicar rodada inteira.
+
+## Regras de Banco
+
+- `competitions.provider + competitions.external_id` e unico.
+- `teams.provider + teams.external_id` e unico.
+- `football_fixtures.provider + football_fixtures.external_id` e unico.
+- `fixture_provider_mappings.provider + external_event_id` e unico.
+- `broadcast_sources.provider + query_hash` e unico para evitar repeticoes pagas desnecessarias.
+- `fixture_broadcasts.football_fixture_id + broadcaster_id + country_code` e unico.
+- Foreign keys usam cascade delete para manter consistencia em dados de desenvolvimento/teste.
+
+## Integracoes
+
+- API-Football: jogos, participantes, datas, horarios, rodadas e resultados.
+- TheSportsDB: descoberta inicial de canais/plataformas de transmissao.
+- OpenAI: fallback controlado para transmissao, com structured output e fontes.
+- GitHub: repositorio `maiconrsantana/onde-assistir`.
+
+## Riscos
+
+- Credenciais de API-Football, TheSportsDB e OpenAI ainda nao configuradas.
+- MySQL depende de banco/usuario reais no `.env` local.
+- Dados de transmissao podem estar ausentes, atrasados ou conflitantes.
+- Regras de timezone precisam ser cobertas por testes quando o dominio de partidas for criado.
+
+## Criterios Gerais de Aceite
+
+- Testes automatizados nao podem depender de internet nem consumir creditos.
+- Sincronizacoes devem ser idempotentes.
+- Falhas de APIs externas devem preservar os ultimos dados validos.
+- Informacoes de transmissao sem evidencia nao devem ser publicadas como confirmadas.
+- Nenhuma rodada deve ser exibida publicamente enquanto estiver em rascunho.
