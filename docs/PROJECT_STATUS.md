@@ -1,10 +1,10 @@
 # Status do Projeto
 
-Atualizado em: 2026-09-16
+Atualizado em: 2026-09-17
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 4 — sincronizacao idempotente dos jogos**.
+Proxima etapa recomendada: **Etapa 5 — resolver transmissoes com TheSportsDB**.
 
 ## Etapas
 
@@ -15,9 +15,10 @@ Proxima etapa recomendada: **Etapa 4 — sincronizacao idempotente dos jogos**.
 | 2 — Dominio, migrations e models | Concluida | Schema, models, factories, seeder e testes criados. |
 | 2.1 — Escopo de transmissao e publicacao | Concluida | Dominio adaptado para TheSportsDB, OpenAI fallback, revisao e publicacao manual. |
 | 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
-| 4 — Sincronizacao idempotente | Pendente | Proximo passo. |
-| 5 — Interface publica | Pendente | Aguardando dados locais. |
-| 6 — Scheduler, filas e cache | Pendente | Aguardando sincronizacao. |
+| 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
+| 5 — Resolver transmissoes com TheSportsDB | Pendente | Proximo passo. |
+| 5.1 — Interface publica | Pendente | Aguardando dados publicados. |
+| 6 — Scheduler, filas e cache | Pendente | Aguardando fluxo de transmissao e publicacao. |
 | 7 — OpenAI para transmissoes ausentes | Pendente | Aguardando fluxo base. |
 | 8 — Painel administrativo | Pendente | Aguardando dados e revisao. |
 | 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
@@ -35,6 +36,7 @@ Proxima etapa recomendada: **Etapa 4 — sincronizacao idempotente dos jogos**.
 - Build frontend: `source .node-env && npm run build`.
 - Etapa 2: `php artisan migrate:fresh --seed`.
 - Etapa 3: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`.
+- Etapa 4: `php artisan football:sync --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 
 ## Decisoes Permanentes
 
@@ -51,10 +53,11 @@ Proxima etapa recomendada: **Etapa 4 — sincronizacao idempotente dos jogos**.
 - Modo de publicacao persistente padrao: `manual`.
 - API-Football fica atras de `FootballDataProvider`.
 - A Etapa 3 normaliza dados em DTOs, sem persistir no banco.
+- `FixtureSynchronizer` persiste competicoes, times e partidas com `updateOrCreate`.
+- `football:sync` ainda nao consulta TheSportsDB nem OpenAI.
 
 ## Pendencias Reais
 
-- Criar banco MySQL `onde_assistir` e preencher `.env` local com usuario/senha reais fora do Git.
-- Implementar sincronizador idempotente para persistir jogos vindos do `FootballDataProvider`.
+- Manter `.env` local com credenciais reais fora do Git.
 - Implementar TheSportsDB antes de OpenAI no fluxo de transmissao.
-- Ainda nao ha integracao com API-Football, TheSportsDB, OpenAI, Scheduler ou painel administrativo.
+- Ainda nao ha integracao com TheSportsDB, OpenAI, Scheduler ou painel administrativo.

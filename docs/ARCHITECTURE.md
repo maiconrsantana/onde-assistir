@@ -107,6 +107,8 @@ Endpoints e regras usados:
 - Filtros usados: `league`, `season`, `from`, `to`, `timezone=UTC` e `page`.
 - O provider retorna DTOs normalizados e nao grava no banco.
 - O comando `football:probe-provider` permite validar a integracao com chave real sem persistir dados.
+- O comando `football:sync` usa os DTOs do provider e persiste competicoes, times e partidas de forma idempotente.
+- A persistencia fica em `App\Services\Football\FixtureSynchronizer`.
 
 Fontes consultadas:
 
@@ -114,12 +116,22 @@ Fontes consultadas:
 - https://www.api-football.com/news/post/how-to-optimize-api-sports-calls-and-quota-usage
 - https://www.api-football.com/news/post/fifa-world-cup-2026-guide-to-using-data-with-api-sports
 
+### Sincronizacao de jogos
+
+`FixtureSynchronizer` usa `updateOrCreate` com as chaves compostas do dominio:
+
+- competicao: `provider + external_id`;
+- time: `provider + external_id`;
+- partida: `provider + external_id`.
+
+Cada partida e processada em uma transacao propria. Se uma partida estiver invalida, ela registra erro e nao impede a persistencia das demais. O sincronizador nao resolve transmissoes; ele apenas mantem dados esportivos locais atualizados.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI ainda nao configuradas.
 - MySQL depende de banco/usuario reais no `.env` local.
 - Dados de transmissao podem estar ausentes, atrasados ou conflitantes.
-- Regras de timezone precisam ser cobertas por testes quando o dominio de partidas for criado.
+- Regras de timezone precisam continuar cobertas por testes nas proximas telas e jobs.
 
 ## Criterios Gerais de Aceite
 
