@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'api_football' => [
+        'base_url' => env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io'),
+        'key' => env('API_FOOTBALL_KEY'),
+        'brasileirao_league_id' => env('API_FOOTBALL_BRASILEIRAO_LEAGUE_ID'),
+        'season' => env('API_FOOTBALL_SEASON', date('Y')),
+        'timeout' => (int) env('API_FOOTBALL_TIMEOUT', 15),
+        'retry_times' => (int) env('API_FOOTBALL_RETRY_TIMES', 2),
+        'retry_sleep' => (int) env('API_FOOTBALL_RETRY_SLEEP', 500),
+    ],
+
 ];

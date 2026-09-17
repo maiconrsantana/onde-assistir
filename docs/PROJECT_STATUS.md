@@ -4,7 +4,7 @@ Atualizado em: 2026-09-16
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 3 — contrato do provedor API-Football**.
+Proxima etapa recomendada: **Etapa 4 — sincronizacao idempotente dos jogos**.
 
 ## Etapas
 
@@ -14,8 +14,8 @@ Proxima etapa recomendada: **Etapa 3 — contrato do provedor API-Football**.
 | 1 — Bootstrap do projeto | Concluida | Laravel 12 instalado, executavel, testado e configurado para MySQL via `.env.example`. |
 | 2 — Dominio, migrations e models | Concluida | Schema, models, factories, seeder e testes criados. |
 | 2.1 — Escopo de transmissao e publicacao | Concluida | Dominio adaptado para TheSportsDB, OpenAI fallback, revisao e publicacao manual. |
-| 3 — Provedor API-Football | Pendente | Proximo passo. |
-| 4 — Sincronizacao idempotente | Pendente | Aguardando provider e dominio. |
+| 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
+| 4 — Sincronizacao idempotente | Pendente | Proximo passo. |
 | 5 — Interface publica | Pendente | Aguardando dados locais. |
 | 6 — Scheduler, filas e cache | Pendente | Aguardando sincronizacao. |
 | 7 — OpenAI para transmissoes ausentes | Pendente | Aguardando fluxo base. |
@@ -34,6 +34,7 @@ Proxima etapa recomendada: **Etapa 3 — contrato do provedor API-Football**.
 - Testes: `php artisan test`.
 - Build frontend: `source .node-env && npm run build`.
 - Etapa 2: `php artisan migrate:fresh --seed`.
+- Etapa 3: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 
 ## Decisoes Permanentes
 
@@ -48,10 +49,12 @@ Proxima etapa recomendada: **Etapa 3 — contrato do provedor API-Football**.
 - Historico de evidencias separado em `broadcast_sources`.
 - Mapeamento de IDs externos separado em `fixture_provider_mappings`.
 - Modo de publicacao persistente padrao: `manual`.
+- API-Football fica atras de `FootballDataProvider`.
+- A Etapa 3 normaliza dados em DTOs, sem persistir no banco.
 
 ## Pendencias Reais
 
 - Criar banco MySQL `onde_assistir` e preencher `.env` local com usuario/senha reais fora do Git.
-- Implementar contrato do provedor API-Football para jogos sem resolver transmissoes na mesma responsabilidade.
+- Implementar sincronizador idempotente para persistir jogos vindos do `FootballDataProvider`.
 - Implementar TheSportsDB antes de OpenAI no fluxo de transmissao.
 - Ainda nao ha integracao com API-Football, TheSportsDB, OpenAI, Scheduler ou painel administrativo.

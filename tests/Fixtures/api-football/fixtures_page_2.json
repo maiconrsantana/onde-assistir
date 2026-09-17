@@ -1,0 +1,73 @@
+{
+  "get": "fixtures",
+  "parameters": {
+    "league": "71",
+    "season": "2026",
+    "from": "2026-09-17",
+    "to": "2026-09-24",
+    "timezone": "UTC",
+    "page": "2"
+  },
+  "errors": [],
+  "results": 1,
+  "paging": {
+    "current": 2,
+    "total": 2
+  },
+  "response": [
+    {
+      "fixture": {
+        "id": 1200002,
+        "timezone": "UTC",
+        "date": "2026-09-18T00:00:00+00:00",
+        "timestamp": 1789689600,
+        "venue": {
+          "id": 102,
+          "name": "Maracana",
+          "city": "Rio de Janeiro"
+        },
+        "status": {
+          "long": "Not Started",
+          "short": "NS",
+          "elapsed": null
+        }
+      },
+      "league": {
+        "id": 71,
+        "name": "Serie A",
+        "country": "Brazil",
+        "logo": "https://media.api-sports.io/football/leagues/71.png",
+        "season": 2026,
+        "round": "Regular Season - 1"
+      },
+      "teams": {
+        "home": {
+          "id": 127,
+          "name": "Flamengo",
+          "logo": "https://media.api-sports.io/football/teams/127.png",
+          "winner": null
+        },
+        "away": {
+          "id": 126,
+          "name": "Sao Paulo",
+          "logo": "https://media.api-sports.io/football/teams/126.png",
+          "winner": null
+        }
+      },
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "score": {
+        "halftime": {
+          "home": null,
+          "away": null
+        },
+        "fulltime": {
+          "home": null,
+          "away": null
+        }
+      }
+    }
+  ]
+}

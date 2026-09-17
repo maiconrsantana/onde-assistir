@@ -95,6 +95,25 @@ Controla revisao e publicacao por competicao, temporada e rodada. Sera usado pel
 - OpenAI: fallback controlado para transmissao, com structured output e fontes.
 - GitHub: repositorio `maiconrsantana/onde-assistir`.
 
+### API-Football
+
+O contrato interno e `App\Contracts\FootballDataProvider`. A implementacao atual e `App\Integrations\ApiFootball\ApiFootballProvider`.
+
+Endpoints e regras usados:
+
+- Base URL padrao: `https://v3.football.api-sports.io`.
+- Autenticacao: header `x-apisports-key`.
+- Endpoint: `GET /fixtures`.
+- Filtros usados: `league`, `season`, `from`, `to`, `timezone=UTC` e `page`.
+- O provider retorna DTOs normalizados e nao grava no banco.
+- O comando `football:probe-provider` permite validar a integracao com chave real sem persistir dados.
+
+Fontes consultadas:
+
+- https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide
+- https://www.api-football.com/news/post/how-to-optimize-api-sports-calls-and-quota-usage
+- https://www.api-football.com/news/post/fifa-world-cup-2026-guide-to-using-data-with-api-sports
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI ainda nao configuradas.

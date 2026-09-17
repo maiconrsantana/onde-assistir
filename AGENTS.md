@@ -14,6 +14,7 @@ Onde Passa o Jogo e uma aplicacao Laravel 12 para listar partidas, horarios e tr
 - Formatacao PHP: `./vendor/bin/pint`
 - Build frontend: `source .node-env && npm run build`
 - Servidor local: `php artisan serve`
+- Diagnosticar API-Football sem persistir: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`
 
 ## Regras do projeto
 
