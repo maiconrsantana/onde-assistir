@@ -4,7 +4,7 @@ Atualizado em: 2026-09-17
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 7 — OpenAI para transmissoes ausentes**.
+Proxima etapa recomendada: **Etapa 6 — Scheduler, filas e cache**.
 
 ## Etapas
 
@@ -18,8 +18,8 @@ Proxima etapa recomendada: **Etapa 7 — OpenAI para transmissoes ausentes**.
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
 | 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
 | 5.1 — Interface publica | Pendente | Aguardando dados publicados. |
-| 6 — Scheduler, filas e cache | Pendente | Aguardando fluxo de transmissao e publicacao. |
-| 7 — OpenAI para transmissoes ausentes | Pendente | Proximo passo para fallback quando TheSportsDB nao resolver. |
+| 6 — Scheduler, filas e cache | Pendente | Proximo passo para automatizar sincronizacao e resolucao. |
+| 7 — OpenAI para transmissoes ausentes | Concluida | `football:resolve-openai-broadcasts` usa Responses API com web search e schema estruturado. |
 | 8 — Painel administrativo | Pendente | Aguardando dados e revisao. |
 | 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
 | 10 — SEO, docs e deploy | Pendente | Aguardando MVP funcional. |
@@ -38,6 +38,7 @@ Proxima etapa recomendada: **Etapa 7 — OpenAI para transmissoes ausentes**.
 - Etapa 3: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 4: `php artisan football:sync --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 5: `php artisan football:resolve-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`.
+- Etapa 7: `php artisan football:resolve-openai-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD --limit=10`.
 
 ## Decisoes Permanentes
 
@@ -59,9 +60,11 @@ Proxima etapa recomendada: **Etapa 7 — OpenAI para transmissoes ausentes**.
 - TheSportsDB fica atras de `BroadcastFinder`.
 - `BroadcastResolver` persiste `broadcast_sources`, `broadcasters`, `fixture_broadcasts` e `fixture_provider_mappings`.
 - Transmissoes encontradas automaticamente continuam com `review_status=pending` e `publication_status=draft`.
+- OpenAI e usada apenas por comando de fallback para jogos nao resolvidos pela TheSportsDB.
+- `OpenAIBroadcastFinder` usa Responses API, web search e JSON Schema estruturado.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
-- Implementar OpenAI como fallback para transmissoes ausentes, incertas ou conflitantes.
-- Ainda nao ha integracao com OpenAI, Scheduler ou painel administrativo.
+- Implementar Scheduler, filas e cache para automatizar o fluxo.
+- Ainda nao ha Scheduler ou painel administrativo.

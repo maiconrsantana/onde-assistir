@@ -141,6 +141,16 @@ O resolvedor persiste:
 
 Mesmo quando encontra transmissao, o modo atual permanece manual: a partida fica `resolution_status=resolved`, `review_status=pending` e `publication_status=draft`.
 
+### OpenAI
+
+O fallback de transmissao usa `App\Integrations\OpenAI\OpenAIBroadcastFinder`, tambem atras do contrato `App\Contracts\BroadcastFinder`.
+
+O comando `football:resolve-openai-broadcasts` processa somente partidas futuras com `resolution_status` `not_found`, `uncertain`, `conflicting` ou `error`. Ele aplica TTL para nao repetir pesquisa paga recentemente, salvo quando executado com `--force`.
+
+A chamada usa Responses API com ferramenta de busca web e retorno estruturado por JSON Schema. A aplicacao ainda valida deterministicamente o resultado: `found` so e aceito quando existem canais e ao menos uma URL de evidencia rastreavel. Caso contrario, o resultado vira `uncertain`.
+
+As fontes, citacoes, resumo, tokens e quantidade de chamadas de busca sao preservados em `broadcast_sources`. Transmissoes vindas da OpenAI tambem permanecem em rascunho e aguardando revisao manual.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.

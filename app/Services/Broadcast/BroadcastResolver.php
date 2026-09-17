@@ -20,6 +20,7 @@ class BroadcastResolver
 {
     public function __construct(
         private readonly BroadcastFinder $finder,
+        private readonly string $failureProvider = BroadcastSource::PROVIDER_THESPORTSDB,
     ) {}
 
     /**
@@ -93,7 +94,7 @@ class BroadcastResolver
     private function persistMapping(FootballFixture $fixture, BroadcastSearchResult $searchResult): void
     {
         FixtureProviderMapping::updateOrCreate([
-            'provider' => FixtureProviderMapping::PROVIDER_THESPORTSDB,
+            'provider' => $searchResult->provider,
             'external_event_id' => $searchResult->externalEventId,
         ], [
             'football_fixture_id' => $fixture->id,
@@ -126,12 +127,12 @@ class BroadcastResolver
         ], [
             'broadcast_source_id' => $source->id,
             'access_type' => $channel->accessType,
-            'source_type' => FixtureBroadcast::SOURCE_THESPORTSDB,
+            'source_type' => $searchResult->provider,
             'source_url' => $channel->sourceUrl ?? $this->firstEvidenceUrl($searchResult),
             'confidence' => $searchResult->calculatedConfidence,
             'verified_at' => now()->utc(),
             'needs_review' => true,
-            'notes' => 'Transmissao encontrada automaticamente via TheSportsDB; aguardando revisao manual.',
+            'notes' => "Transmissao encontrada automaticamente via {$searchResult->provider}; aguardando revisao manual.",
         ]);
     }
 
@@ -156,7 +157,7 @@ class BroadcastResolver
     private function recordFailure(FootballFixture $fixture, Throwable $exception, BroadcastResolutionResult $result): void
     {
         $queryHash = hash('sha256', implode('|', [
-            BroadcastSource::PROVIDER_THESPORTSDB,
+            $this->failureProvider,
             $fixture->id,
             $fixture->external_id,
             $fixture->starts_at,
@@ -165,7 +166,7 @@ class BroadcastResolver
 
         DB::transaction(function () use ($fixture, $exception, $queryHash, $result): void {
             BroadcastSource::updateOrCreate([
-                'provider' => BroadcastSource::PROVIDER_THESPORTSDB,
+                'provider' => $this->failureProvider,
                 'query_hash' => $queryHash,
             ], [
                 'football_fixture_id' => $fixture->id,
@@ -195,7 +196,7 @@ class BroadcastResolver
 
         Log::warning('football.broadcast_resolution_failed', [
             'football_fixture_id' => $fixture->id,
-            'provider' => BroadcastSource::PROVIDER_THESPORTSDB,
+            'provider' => $this->failureProvider,
             'exception' => $exception::class,
             'message' => $exception->getMessage(),
         ]);

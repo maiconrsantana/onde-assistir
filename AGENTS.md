@@ -17,6 +17,7 @@ Onde Passa o Jogo e uma aplicacao Laravel 12 para listar partidas, horarios e tr
 - Diagnosticar API-Football sem persistir: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`
 - Sincronizar jogos no banco: `php artisan football:sync --from=YYYY-MM-DD --to=YYYY-MM-DD`
 - Resolver transmissoes via TheSportsDB: `php artisan football:resolve-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`
+- Resolver transmissoes pendentes via OpenAI: `php artisan football:resolve-openai-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD --limit=10`
 
 ## Regras do projeto
 
