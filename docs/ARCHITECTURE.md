@@ -126,9 +126,24 @@ Fontes consultadas:
 
 Cada partida e processada em uma transacao propria. Se uma partida estiver invalida, ela registra erro e nao impede a persistencia das demais. O sincronizador nao resolve transmissoes; ele apenas mantem dados esportivos locais atualizados.
 
+### TheSportsDB
+
+O contrato interno para transmissao e `App\Contracts\BroadcastFinder`. A implementacao atual e `App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder`.
+
+O comando `football:resolve-broadcasts` seleciona partidas locais por data e status de resolucao, consulta a TheSportsDB e passa o resultado para `App\Services\Broadcast\BroadcastResolver`.
+
+O resolvedor persiste:
+
+- `broadcast_sources`: historico da consulta, evidencias, payload sanitizado, confianca e resultado;
+- `fixture_provider_mappings`: vinculo entre partida local e evento externo da TheSportsDB;
+- `broadcasters`: catalogo local de canais/plataformas;
+- `fixture_broadcasts`: transmissao selecionada para a partida.
+
+Mesmo quando encontra transmissao, o modo atual permanece manual: a partida fica `resolution_status=resolved`, `review_status=pending` e `publication_status=draft`.
+
 ## Riscos
 
-- Credenciais de API-Football, TheSportsDB e OpenAI ainda nao configuradas.
+- Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.
 - MySQL depende de banco/usuario reais no `.env` local.
 - Dados de transmissao podem estar ausentes, atrasados ou conflitantes.
 - Regras de timezone precisam continuar cobertas por testes nas proximas telas e jobs.

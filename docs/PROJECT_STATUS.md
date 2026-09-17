@@ -4,7 +4,7 @@ Atualizado em: 2026-09-17
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 5 — resolver transmissoes com TheSportsDB**.
+Proxima etapa recomendada: **Etapa 7 — OpenAI para transmissoes ausentes**.
 
 ## Etapas
 
@@ -16,10 +16,10 @@ Proxima etapa recomendada: **Etapa 5 — resolver transmissoes com TheSportsDB**
 | 2.1 — Escopo de transmissao e publicacao | Concluida | Dominio adaptado para TheSportsDB, OpenAI fallback, revisao e publicacao manual. |
 | 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
-| 5 — Resolver transmissoes com TheSportsDB | Pendente | Proximo passo. |
+| 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
 | 5.1 — Interface publica | Pendente | Aguardando dados publicados. |
 | 6 — Scheduler, filas e cache | Pendente | Aguardando fluxo de transmissao e publicacao. |
-| 7 — OpenAI para transmissoes ausentes | Pendente | Aguardando fluxo base. |
+| 7 — OpenAI para transmissoes ausentes | Pendente | Proximo passo para fallback quando TheSportsDB nao resolver. |
 | 8 — Painel administrativo | Pendente | Aguardando dados e revisao. |
 | 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
 | 10 — SEO, docs e deploy | Pendente | Aguardando MVP funcional. |
@@ -37,6 +37,7 @@ Proxima etapa recomendada: **Etapa 5 — resolver transmissoes com TheSportsDB**
 - Etapa 2: `php artisan migrate:fresh --seed`.
 - Etapa 3: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 4: `php artisan football:sync --from=YYYY-MM-DD --to=YYYY-MM-DD`.
+- Etapa 5: `php artisan football:resolve-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 
 ## Decisoes Permanentes
 
@@ -54,10 +55,13 @@ Proxima etapa recomendada: **Etapa 5 — resolver transmissoes com TheSportsDB**
 - API-Football fica atras de `FootballDataProvider`.
 - A Etapa 3 normaliza dados em DTOs, sem persistir no banco.
 - `FixtureSynchronizer` persiste competicoes, times e partidas com `updateOrCreate`.
-- `football:sync` ainda nao consulta TheSportsDB nem OpenAI.
+- `football:sync` ainda nao consulta TheSportsDB nem OpenAI; transmissoes sao resolvidas em comando separado.
+- TheSportsDB fica atras de `BroadcastFinder`.
+- `BroadcastResolver` persiste `broadcast_sources`, `broadcasters`, `fixture_broadcasts` e `fixture_provider_mappings`.
+- Transmissoes encontradas automaticamente continuam com `review_status=pending` e `publication_status=draft`.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
-- Implementar TheSportsDB antes de OpenAI no fluxo de transmissao.
-- Ainda nao ha integracao com TheSportsDB, OpenAI, Scheduler ou painel administrativo.
+- Implementar OpenAI como fallback para transmissoes ausentes, incertas ou conflitantes.
+- Ainda nao ha integracao com OpenAI, Scheduler ou painel administrativo.
