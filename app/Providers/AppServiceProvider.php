@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\BroadcastFinder;
 use App\Contracts\FootballDataProvider;
 use App\Integrations\ApiFootball\ApiFootballProvider;
+use App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +23,15 @@ class AppServiceProvider extends ServiceProvider
             timeout: config('services.api_football.timeout'),
             retryTimes: config('services.api_football.retry_times'),
             retrySleep: config('services.api_football.retry_sleep'),
+        ));
+
+        $this->app->bind(BroadcastFinder::class, fn () => new TheSportsDbBroadcastFinder(
+            baseUrl: config('services.thesportsdb.base_url'),
+            key: config('services.thesportsdb.key'),
+            timeout: config('services.thesportsdb.timeout'),
+            retryTimes: config('services.thesportsdb.retry_times'),
+            retrySleep: config('services.thesportsdb.retry_sleep'),
+            country: config('services.thesportsdb.country'),
         ));
     }
 

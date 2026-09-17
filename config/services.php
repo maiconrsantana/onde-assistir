@@ -45,4 +45,13 @@ return [
         'retry_sleep' => (int) env('API_FOOTBALL_RETRY_SLEEP', 500),
     ],
 
+    'thesportsdb' => [
+        'base_url' => env('THESPORTSDB_BASE_URL', 'https://www.thesportsdb.com/api/v1/json'),
+        'key' => env('THESPORTSDB_API_KEY'),
+        'timeout' => (int) env('THESPORTSDB_TIMEOUT', 15),
+        'retry_times' => (int) env('THESPORTSDB_RETRY_TIMES', 2),
+        'retry_sleep' => (int) env('THESPORTSDB_RETRY_SLEEP', 500),
+        'country' => env('THESPORTSDB_COUNTRY', 'Brazil'),
+    ],
+
 ];
