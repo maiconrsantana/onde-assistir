@@ -1,10 +1,10 @@
 # Status do Projeto
 
-Atualizado em: 2026-09-17
+Atualizado em: 2026-09-18
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 6 — Scheduler, filas e cache**.
+Proxima etapa recomendada: **Etapa 8 — Painel administrativo**.
 
 ## Etapas
 
@@ -18,9 +18,9 @@ Proxima etapa recomendada: **Etapa 6 — Scheduler, filas e cache**.
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
 | 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
 | 5.1 — Interface publica | Pendente | Aguardando dados publicados. |
-| 6 — Scheduler, filas e cache | Pendente | Proximo passo para automatizar sincronizacao e resolucao. |
+| 6 — Scheduler, filas e cache | Concluida | Scheduler registrado, status operacional em cache e invalidação do cache publico em sucesso. |
 | 7 — OpenAI para transmissoes ausentes | Concluida | `football:resolve-openai-broadcasts` usa Responses API com web search e schema estruturado. |
-| 8 — Painel administrativo | Pendente | Aguardando dados e revisao. |
+| 8 — Painel administrativo | Pendente | Proximo passo para revisar, aprovar e publicar transmissoes. |
 | 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
 | 10 — SEO, docs e deploy | Pendente | Aguardando MVP funcional. |
 | 11 — Libertadores | Futuro | Somente apos Brasileirão estabilizado. |
@@ -38,6 +38,7 @@ Proxima etapa recomendada: **Etapa 6 — Scheduler, filas e cache**.
 - Etapa 3: `php artisan football:probe-provider --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 4: `php artisan football:sync --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 5: `php artisan football:resolve-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`.
+- Etapa 6: `CACHE_STORE=array php artisan schedule:list`.
 - Etapa 7: `php artisan football:resolve-openai-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD --limit=10`.
 
 ## Decisoes Permanentes
@@ -62,9 +63,12 @@ Proxima etapa recomendada: **Etapa 6 — Scheduler, filas e cache**.
 - Transmissoes encontradas automaticamente continuam com `review_status=pending` e `publication_status=draft`.
 - OpenAI e usada apenas por comando de fallback para jogos nao resolvidos pela TheSportsDB.
 - `OpenAIBroadcastFinder` usa Responses API, web search e JSON Schema estruturado.
+- Scheduler roda `football:sync --days=14` as 06:00 e `football:refresh-broadcasts --days=7` as 16:00 em `America/Sao_Paulo`.
+- `football:automation-status` le status operacional leve salvo em cache.
+- Cache publico atual e invalidado somente quando sincronizacao/resolucao termina com sucesso.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
-- Implementar Scheduler, filas e cache para automatizar o fluxo.
-- Ainda nao ha Scheduler ou painel administrativo.
+- Implementar painel administrativo para revisar, aprovar e publicar transmissoes.
+- Ainda nao ha painel administrativo nem interface publica publicada.

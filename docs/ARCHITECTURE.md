@@ -151,6 +151,19 @@ A chamada usa Responses API com ferramenta de busca web e retorno estruturado po
 
 As fontes, citacoes, resumo, tokens e quantidade de chamadas de busca sao preservados em `broadcast_sources`. Transmissoes vindas da OpenAI tambem permanecem em rascunho e aguardando revisao manual.
 
+### Automacao, cache e diagnostico
+
+O Scheduler fica em `routes/console.php`:
+
+- `football:sync --days=14` diariamente as 06:00 em `America/Sao_Paulo`;
+- `football:refresh-broadcasts --days=7` diariamente as 16:00 em `America/Sao_Paulo`.
+
+Os eventos usam `withoutOverlapping(120)` para evitar execucoes concorrentes. `onOneServer` nao foi adotado porque o projeto ainda nao tem cache compartilhado multi-instancia configurado.
+
+`football:refresh-broadcasts` roda TheSportsDB e depois OpenAI fallback. Os comandos registram ultimo sucesso/falha em `App\Services\Operations\FootballAutomationStatus`, usando cache. `football:automation-status` exibe esse diagnostico.
+
+`App\Services\Operations\PublicScheduleCache` centraliza a chave do cache publico futuro. O cache e invalidado apos sincronizacoes/resolucoes bem-sucedidas; falhas preservam o cache anterior.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.

@@ -21,12 +21,12 @@ class ResolveOpenAiBroadcastsCommandTest extends TestCase
         Config::set('services.openai.model', 'gpt-test');
 
         $target = FootballFixture::factory()->create([
-            'starts_at' => '2026-09-18 15:00:00',
+            'starts_at' => '2026-09-19 15:00:00',
             'resolution_status' => FootballFixture::RESOLUTION_NOT_FOUND,
         ]);
 
         FootballFixture::factory()->create([
-            'starts_at' => '2026-09-18 18:00:00',
+            'starts_at' => '2026-09-19 18:00:00',
             'resolution_status' => FootballFixture::RESOLUTION_PENDING,
         ]);
 
@@ -59,8 +59,8 @@ class ResolveOpenAiBroadcastsCommandTest extends TestCase
         ]);
 
         $this->artisan('football:resolve-openai-broadcasts', [
-            '--from' => '2026-09-18',
-            '--to' => '2026-09-18',
+            '--from' => '2026-09-19',
+            '--to' => '2026-09-19',
         ])
             ->assertExitCode(0);
 
@@ -92,7 +92,7 @@ class ResolveOpenAiBroadcastsCommandTest extends TestCase
         Config::set('services.openai.model', 'gpt-test');
 
         $fixture = FootballFixture::factory()->create([
-            'starts_at' => '2026-09-18 15:00:00',
+            'starts_at' => '2026-09-19 15:00:00',
             'resolution_status' => FootballFixture::RESOLUTION_NOT_FOUND,
         ]);
 
@@ -107,8 +107,8 @@ class ResolveOpenAiBroadcastsCommandTest extends TestCase
         Http::fake();
 
         $this->artisan('football:resolve-openai-broadcasts', [
-            '--from' => '2026-09-18',
-            '--to' => '2026-09-18',
+            '--from' => '2026-09-19',
+            '--to' => '2026-09-19',
         ])
             ->assertExitCode(0);
 

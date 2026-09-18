@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Contracts\FootballDataProvider;
 use App\Services\Football\FixtureSynchronizer;
+use App\Services\Operations\FootballAutomationStatus;
+use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Throwable;
@@ -17,8 +19,12 @@ class SyncFootballFixturesCommand extends Command
 
     protected $description = 'Fetch API-Football fixtures and persist them idempotently.';
 
-    public function handle(FootballDataProvider $provider, FixtureSynchronizer $synchronizer): int
-    {
+    public function handle(
+        FootballDataProvider $provider,
+        FixtureSynchronizer $synchronizer,
+        FootballAutomationStatus $status,
+        PublicScheduleCache $cache,
+    ): int {
         [$from, $to] = $this->dateRange();
 
         $this->components->info("Sincronizando partidas de {$from->toDateString()} ate {$to->toDateString()}.");
@@ -27,6 +33,7 @@ class SyncFootballFixturesCommand extends Command
             $fixtures = $provider->fixturesBetween($from, $to);
         } catch (Throwable $exception) {
             $this->components->error($exception->getMessage());
+            $status->recordFailure('football:sync', $exception->getMessage());
 
             return self::FAILURE;
         }
@@ -42,7 +49,16 @@ class SyncFootballFixturesCommand extends Command
             $this->components->warn($message);
         }
 
-        return $result->errors > 0 ? self::FAILURE : self::SUCCESS;
+        if ($result->errors > 0) {
+            $status->recordFailure('football:sync', 'Sincronizacao concluiu com erros.', $result->totals());
+
+            return self::FAILURE;
+        }
+
+        $cache->invalidate();
+        $status->recordSuccess('football:sync', $result->totals());
+
+        return self::SUCCESS;
     }
 
     /**

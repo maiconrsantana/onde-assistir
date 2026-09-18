@@ -6,6 +6,8 @@ use App\Integrations\OpenAI\OpenAIBroadcastFinder;
 use App\Models\BroadcastSource;
 use App\Models\FootballFixture;
 use App\Services\Broadcast\BroadcastResolver;
+use App\Services\Operations\FootballAutomationStatus;
+use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -21,8 +23,11 @@ class ResolveOpenAiBroadcastsCommand extends Command
 
     protected $description = 'Resolve missing or uncertain fixture broadcasts using OpenAI web search fallback.';
 
-    public function handle(OpenAIBroadcastFinder $finder): int
-    {
+    public function handle(
+        OpenAIBroadcastFinder $finder,
+        FootballAutomationStatus $status,
+        PublicScheduleCache $cache,
+    ): int {
         [$from, $to] = $this->dateRange();
         $limit = max(1, (int) $this->option('limit'));
         $ttlHours = max(1, (int) $this->option('ttl-hours'));
@@ -62,7 +67,16 @@ class ResolveOpenAiBroadcastsCommand extends Command
             $this->components->warn($message);
         }
 
-        return $result->errors > 0 ? self::FAILURE : self::SUCCESS;
+        if ($result->errors > 0) {
+            $status->recordFailure('football:resolve-openai-broadcasts', 'Resolucao OpenAI concluiu com erros.', $result->totals());
+
+            return self::FAILURE;
+        }
+
+        $cache->invalidate();
+        $status->recordSuccess('football:resolve-openai-broadcasts', $result->totals());
+
+        return self::SUCCESS;
     }
 
     /**

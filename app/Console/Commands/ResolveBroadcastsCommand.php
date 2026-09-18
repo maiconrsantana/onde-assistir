@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\FootballFixture;
 use App\Services\Broadcast\BroadcastResolver;
+use App\Services\Operations\FootballAutomationStatus;
+use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -18,16 +20,16 @@ class ResolveBroadcastsCommand extends Command
 
     protected $description = 'Resolve fixture broadcasts using TheSportsDB before any OpenAI fallback.';
 
-    public function handle(BroadcastResolver $resolver): int
+    public function handle(BroadcastResolver $resolver, FootballAutomationStatus $status, PublicScheduleCache $cache): int
     {
         [$from, $to] = $this->dateRange();
         $limit = max(1, (int) $this->option('limit'));
-        $status = (string) $this->option('status');
+        $resolutionStatus = (string) $this->option('status');
 
         $fixtures = FootballFixture::query()
             ->with(['competition', 'homeTeam', 'awayTeam'])
             ->whereBetween('starts_at', [$from->utc(), $to->utc()])
-            ->when($status !== 'all', fn ($query) => $query->where('resolution_status', $status))
+            ->when($resolutionStatus !== 'all', fn ($query) => $query->where('resolution_status', $resolutionStatus))
             ->orderBy('starts_at')
             ->limit($limit)
             ->get();
@@ -45,7 +47,16 @@ class ResolveBroadcastsCommand extends Command
             $this->components->warn($message);
         }
 
-        return $result->errors > 0 ? self::FAILURE : self::SUCCESS;
+        if ($result->errors > 0) {
+            $status->recordFailure('football:resolve-broadcasts', 'Resolucao TheSportsDB concluiu com erros.', $result->totals());
+
+            return self::FAILURE;
+        }
+
+        $cache->invalidate();
+        $status->recordSuccess('football:resolve-broadcasts', $result->totals());
+
+        return self::SUCCESS;
     }
 
     /**
