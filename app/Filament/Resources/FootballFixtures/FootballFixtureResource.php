@@ -6,6 +6,7 @@ use App\Filament\Resources\FootballFixtures\Pages\CreateFootballFixture;
 use App\Filament\Resources\FootballFixtures\Pages\EditFootballFixture;
 use App\Filament\Resources\FootballFixtures\Pages\ListFootballFixtures;
 use App\Filament\Resources\FootballFixtures\Pages\ViewFootballFixture;
+use App\Filament\Resources\FootballFixtures\RelationManagers\FixtureBroadcastsRelationManager;
 use App\Filament\Resources\FootballFixtures\Schemas\FootballFixtureForm;
 use App\Filament\Resources\FootballFixtures\Schemas\FootballFixtureInfolist;
 use App\Filament\Resources\FootballFixtures\Tables\FootballFixturesTable;
@@ -48,7 +49,7 @@ class FootballFixtureResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            FixtureBroadcastsRelationManager::class,
         ];
     }
 

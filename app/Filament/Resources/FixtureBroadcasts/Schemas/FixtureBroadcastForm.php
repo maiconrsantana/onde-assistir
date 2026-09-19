@@ -78,6 +78,24 @@ class FixtureBroadcastForm
                     ->seconds(false),
                 Toggle::make('needs_review')
                     ->label('Precisa de revisão'),
+                Select::make('review_status')
+                    ->label('Aprovado')
+                    ->required()
+                    ->default(FixtureBroadcast::REVIEW_PENDING)
+                    ->options([
+                        FixtureBroadcast::REVIEW_PENDING => 'Pendente',
+                        FixtureBroadcast::REVIEW_APPROVED => 'Aprovado',
+                        FixtureBroadcast::REVIEW_REJECTED => 'Rejeitado',
+                    ]),
+                Select::make('publication_status')
+                    ->label('Publicado')
+                    ->required()
+                    ->default(FixtureBroadcast::PUBLICATION_DRAFT)
+                    ->options([
+                        FixtureBroadcast::PUBLICATION_DRAFT => 'Rascunho',
+                        FixtureBroadcast::PUBLICATION_PUBLISHED => 'Publicado',
+                        FixtureBroadcast::PUBLICATION_UNPUBLISHED => 'Retirado do ar',
+                    ]),
                 Textarea::make('notes')
                     ->label('Observações')
                     ->maxLength(2000)

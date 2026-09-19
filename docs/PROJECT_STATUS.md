@@ -69,11 +69,13 @@ Proxima etapa recomendada: **Etapa 9 — Endurecimento do MVP**.
 - `football:automation-status` le status operacional leve salvo em cache.
 - Cache publico atual e invalidado somente quando sincronizacao/resolucao termina com sucesso.
 - Filament 5 fica em `/admin`; usuarios precisam de `is_admin=true` para acessar.
+- A acao de partidas no Filament aprova e publica a partida, alem de invalidar o cache publico.
+- A acao de transmissoes no Filament aprova apenas a transmissao e invalida o cache publico.
 - Alteracoes manuais de transmissao gravam `broadcast_sources.provider=manual`.
 - Transmissoes manuais nao sao sobrescritas por resolucoes automaticas futuras.
 - A rota publica `/` nao chama APIs externas durante a request do visitante.
 - A agenda publica lista apenas partidas com `publication_status=published` e `review_status=approved`.
-- Transmissoes publicas sao filtradas por Brasil e precisam estar sem `needs_review`.
+- Transmissoes publicas sao filtradas por Brasil e precisam estar sem `needs_review`, aprovadas e publicadas; o painel permite publicar ou retirar cada transmissao individualmente.
 - Jogos publicados sem transmissao publicavel exibem "Transmissao ainda nao divulgada".
 
 ## Pendencias Reais

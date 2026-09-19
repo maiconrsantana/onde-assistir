@@ -30,6 +30,8 @@ class PublishedFixtureSchedule
                     'fixtureBroadcasts' => fn ($query) => $query
                         ->where('country_code', 'BR')
                         ->where('needs_review', false)
+                        ->where('review_status', FixtureBroadcast::REVIEW_APPROVED)
+                        ->where('publication_status', FixtureBroadcast::PUBLICATION_PUBLISHED)
                         ->with('broadcaster')
                         ->orderBy('access_type')
                         ->orderBy('id'),

@@ -70,6 +70,8 @@ Relaciona uma partida a uma emissora em um pais. A restricao unica `football_fix
 
 Essa tabela representa a transmissao selecionada/publicavel. O historico completo permanece em `broadcast_sources`.
 
+Cada transmissao possui `review_status` e `publication_status` independentes dos estados da partida. Isso permite aprovar, publicar ou retirar uma emissora especifica sem retirar o jogo inteiro da agenda.
+
 ### `publication_settings`
 
 Guarda o modo persistente de publicacao. O padrao e `manual`; `automatic` sera habilitado futuramente pelo painel quando o processo estiver validado.
@@ -170,11 +172,13 @@ O painel usa Filament 5 em `/admin`. O acesso exige usuario autenticado com `use
 
 Recursos atuais:
 
-- partidas: revisao de status, filtros por competicao/time/status e acao de aprovacao;
+- partidas: revisao de status, filtros por competicao/time/status e acao **Aprovar e publicar**;
 - emissoras: CRUD de nome, slug e tipo;
-- transmissoes: criacao/correcao manual, filtros por origem/revisao/fonte e acao de aprovacao.
+- transmissoes: criacao/correcao manual, filtros por origem/revisao/fonte e acao **Aprovar transmissao**.
 
 Alteracoes manuais usam `source_type=manual`, geram historico em `broadcast_sources` com `provider=manual` e preservam o usuario responsavel no payload sanitizado. O resolvedor automatico nao sobrescreve transmissao manual existente para a mesma partida, emissora e pais.
+
+Ao aprovar e publicar uma partida, o painel define `review_status=approved`, `publication_status=published`, registra usuario/data de aprovacao, define `published_at`, limpa `needs_review` das transmissoes da partida e invalida o cache publico. Aprovar uma transmissao individual limpa apenas `needs_review`, atualiza `verified_at` e tambem invalida o cache publico.
 
 ### Interface publica
 
@@ -182,7 +186,7 @@ A pagina publica fica na rota `/` e usa `App\Http\Controllers\PublicScheduleCont
 
 A consulta da agenda fica em `App\Services\PublicSchedule\PublishedFixtureSchedule` para manter a regra publica fora da view. A pagina lista somente partidas futuras dos proximos 30 dias com `publication_status=published` e `review_status=approved`.
 
-Transmissoes exibidas ao visitante sao carregadas de `fixture_broadcasts` apenas quando `country_code=BR` e `needs_review=false`. Se uma partida publicada nao tiver transmissao publicavel, a tela mostra "Transmissao ainda nao divulgada".
+Transmissoes exibidas ao visitante sao carregadas de `fixture_broadcasts` apenas quando `country_code=BR`, `needs_review=false`, `review_status=approved` e `publication_status=published`. O painel permite editar esses estados e retirar uma transmissao individual do ar. Se uma partida publicada nao tiver transmissao publicavel, a tela mostra "Transmissao ainda nao divulgada".
 
 A request publica nao chama API-Football, TheSportsDB nem OpenAI. Ela consulta dados locais e usa `App\Services\Operations\PublicScheduleCache`, invalidado pelos fluxos de sincronizacao/resolucao quando concluem com sucesso.
 

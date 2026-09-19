@@ -65,6 +65,8 @@ php artisan make:filament-user
 
 Depois ajuste o campo `is_admin` desse usuário para `1` no MySQL.
 
+No recurso de partidas, use **Aprovar e publicar** para marcar o jogo como revisado e publica-lo na rota `/`. Uma partida publicada pode usar **Retirar do ar** para deixar de ser exibida. No recurso de transmissoes, os campos **Aprovado** e **Publicado** podem ser editados individualmente; as acoes **Aprovar e publicar** e **Retirar do ar** controlam a exibicao daquela transmissao quando a partida ja estiver publicada.
+
 ## Interface publica
 
 A rota `/` exibe a agenda publica. Ela le apenas dados locais publicados e aprovados, sem consultar API-Football, TheSportsDB ou OpenAI durante a request do visitante.
@@ -82,4 +84,4 @@ CACHE_STORE=array php artisan schedule:list
 
 ## Publicacao
 
-O modo padrao e manual. Transmissoes encontradas automaticamente ficam em rascunho ate revisao/aprovacao futura no painel administrativo.
+O modo padrao e manual. Transmissoes encontradas automaticamente ficam em rascunho ate revisao/aprovacao no painel administrativo.

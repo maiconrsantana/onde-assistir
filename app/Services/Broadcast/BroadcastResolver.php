@@ -142,6 +142,8 @@ class BroadcastResolver
             'confidence' => $searchResult->calculatedConfidence,
             'verified_at' => now()->utc(),
             'needs_review' => true,
+            'review_status' => FixtureBroadcast::REVIEW_PENDING,
+            'publication_status' => FixtureBroadcast::PUBLICATION_DRAFT,
             'notes' => "Transmissao encontrada automaticamente via {$searchResult->provider}; aguardando revisao manual.",
         ]);
     }

@@ -34,6 +34,8 @@ class FixtureBroadcastFactory extends Factory
             'confidence' => fake()->randomFloat(4, 0.7, 1),
             'verified_at' => now()->utc(),
             'needs_review' => false,
+            'review_status' => FixtureBroadcast::REVIEW_APPROVED,
+            'publication_status' => FixtureBroadcast::PUBLICATION_PUBLISHED,
             'notes' => null,
         ];
     }

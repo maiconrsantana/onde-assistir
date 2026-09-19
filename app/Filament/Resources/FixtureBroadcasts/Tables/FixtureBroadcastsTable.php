@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FixtureBroadcasts\Tables;
 
 use App\Models\FixtureBroadcast;
+use App\Services\Operations\PublicScheduleCache;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -49,6 +50,12 @@ class FixtureBroadcastsTable
                 IconColumn::make('needs_review')
                     ->label('Revisar')
                     ->boolean(),
+                TextColumn::make('review_status')
+                    ->label('Aprovado')
+                    ->badge(),
+                TextColumn::make('publication_status')
+                    ->label('Publicado')
+                    ->badge(),
                 TextColumn::make('confidence')
                     ->label('Confiança')
                     ->numeric(decimalPlaces: 2),
@@ -76,14 +83,34 @@ class FixtureBroadcastsTable
             ->recordActions([
                 ViewAction::make(),
                 Action::make('approve')
-                    ->label('Aprovar')
+                    ->label('Aprovar e publicar')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->action(fn (FixtureBroadcast $record) => $record->forceFill([
-                        'needs_review' => false,
-                        'verified_at' => now()->utc(),
-                    ])->save()),
+                    ->visible(fn (FixtureBroadcast $record): bool => $record->publication_status !== FixtureBroadcast::PUBLICATION_PUBLISHED)
+                    ->action(function (FixtureBroadcast $record, PublicScheduleCache $cache): void {
+                        $record->forceFill([
+                            'needs_review' => false,
+                            'review_status' => FixtureBroadcast::REVIEW_APPROVED,
+                            'publication_status' => FixtureBroadcast::PUBLICATION_PUBLISHED,
+                            'verified_at' => now()->utc(),
+                        ])->save();
+
+                        $cache->invalidate();
+                    }),
+                Action::make('unpublish')
+                    ->label('Retirar do ar')
+                    ->icon('heroicon-o-eye-slash')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (FixtureBroadcast $record): bool => $record->publication_status === FixtureBroadcast::PUBLICATION_PUBLISHED)
+                    ->action(function (FixtureBroadcast $record, PublicScheduleCache $cache): void {
+                        $record->forceFill([
+                            'publication_status' => FixtureBroadcast::PUBLICATION_UNPUBLISHED,
+                        ])->save();
+
+                        $cache->invalidate();
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([

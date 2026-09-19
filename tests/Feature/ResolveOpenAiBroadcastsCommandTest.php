@@ -6,6 +6,7 @@ use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -13,6 +14,20 @@ use Tests\TestCase;
 class ResolveOpenAiBroadcastsCommandTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::parse('2026-09-18 12:00:00', 'America/Sao_Paulo'));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     public function test_command_processes_only_fixtures_that_need_openai_fallback(): void
     {

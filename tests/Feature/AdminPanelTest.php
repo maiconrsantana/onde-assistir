@@ -6,13 +6,20 @@ use App\Contracts\BroadcastFinder;
 use App\Data\Broadcast\BroadcastChannelData;
 use App\Data\Broadcast\BroadcastSearchResult;
 use App\Filament\Resources\FixtureBroadcasts\Pages\CreateFixtureBroadcast;
+use App\Filament\Resources\FixtureBroadcasts\Pages\ListFixtureBroadcasts;
+use App\Filament\Resources\FootballFixtures\FootballFixtureResource;
+use App\Filament\Resources\FootballFixtures\Pages\EditFootballFixture;
+use App\Filament\Resources\FootballFixtures\Pages\ListFootballFixtures;
+use App\Filament\Resources\FootballFixtures\RelationManagers\FixtureBroadcastsRelationManager;
 use App\Models\Broadcaster;
 use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
 use App\Models\User;
 use App\Services\Broadcast\BroadcastResolver;
+use App\Services\Operations\PublicScheduleCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -161,5 +168,125 @@ class AdminPanelTest extends TestCase
             'source_url' => 'https://example.com/manual',
             'needs_review' => false,
         ]);
+    }
+
+    public function test_admin_approves_and_publishes_fixture_from_panel(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $fixture = FootballFixture::factory()->create([
+            'review_status' => FootballFixture::REVIEW_PENDING,
+            'publication_status' => FootballFixture::PUBLICATION_DRAFT,
+            'approved_by' => null,
+            'approved_at' => null,
+            'published_at' => null,
+        ]);
+
+        FixtureBroadcast::factory()->create([
+            'football_fixture_id' => $fixture->id,
+            'needs_review' => true,
+        ]);
+
+        Cache::put(PublicScheduleCache::INDEX_KEY, 'stale');
+
+        $this->actingAs($admin);
+
+        Livewire::test(ListFootballFixtures::class)
+            ->callTableAction('approve_review', $fixture)
+            ->assertHasNoTableActionErrors();
+
+        $fixture->refresh();
+
+        $this->assertSame(FootballFixture::REVIEW_APPROVED, $fixture->review_status);
+        $this->assertSame(FootballFixture::PUBLICATION_PUBLISHED, $fixture->publication_status);
+        $this->assertSame($admin->id, $fixture->approved_by);
+        $this->assertNotNull($fixture->approved_at);
+        $this->assertNotNull($fixture->published_at);
+        $this->assertFalse($fixture->fixtureBroadcasts()->where('needs_review', true)->exists());
+        $this->assertFalse(Cache::has(PublicScheduleCache::INDEX_KEY));
+    }
+
+    public function test_admin_approves_fixture_broadcast_from_panel(): void
+    {
+        $broadcast = FixtureBroadcast::factory()->create([
+            'needs_review' => true,
+            'verified_at' => null,
+            'review_status' => FixtureBroadcast::REVIEW_PENDING,
+            'publication_status' => FixtureBroadcast::PUBLICATION_DRAFT,
+        ]);
+
+        Cache::put(PublicScheduleCache::INDEX_KEY, 'stale');
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(ListFixtureBroadcasts::class)
+            ->callTableAction('approve', $broadcast)
+            ->assertHasNoTableActionErrors();
+
+        $broadcast->refresh();
+
+        $this->assertFalse($broadcast->needs_review);
+        $this->assertNotNull($broadcast->verified_at);
+        $this->assertFalse(Cache::has(PublicScheduleCache::INDEX_KEY));
+    }
+
+    public function test_admin_can_unpublish_fixture_from_panel(): void
+    {
+        $fixture = FootballFixture::factory()->create([
+            'review_status' => FootballFixture::REVIEW_APPROVED,
+            'publication_status' => FootballFixture::PUBLICATION_PUBLISHED,
+        ]);
+
+        Cache::put(PublicScheduleCache::INDEX_KEY, 'stale');
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(ListFootballFixtures::class)
+            ->callTableAction('unpublish', $fixture)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertDatabaseHas('football_fixtures', [
+            'id' => $fixture->id,
+            'publication_status' => FootballFixture::PUBLICATION_UNPUBLISHED,
+        ]);
+        $this->assertFalse(Cache::has(PublicScheduleCache::INDEX_KEY));
+    }
+
+    public function test_admin_can_unpublish_fixture_broadcast_from_panel(): void
+    {
+        $broadcast = FixtureBroadcast::factory()->create([
+            'needs_review' => false,
+            'review_status' => FixtureBroadcast::REVIEW_APPROVED,
+            'publication_status' => FixtureBroadcast::PUBLICATION_PUBLISHED,
+        ]);
+
+        Cache::put(PublicScheduleCache::INDEX_KEY, 'stale');
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(ListFixtureBroadcasts::class)
+            ->callTableAction('unpublish', $broadcast)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertDatabaseHas('fixture_broadcasts', [
+            'id' => $broadcast->id,
+            'publication_status' => FixtureBroadcast::PUBLICATION_UNPUBLISHED,
+        ]);
+        $this->assertFalse(Cache::has(PublicScheduleCache::INDEX_KEY));
+    }
+
+    public function test_fixture_edit_screen_registers_linked_broadcasts_section(): void
+    {
+        $fixture = FootballFixture::factory()->create();
+        FixtureBroadcast::factory()->create(['football_fixture_id' => $fixture->id]);
+
+        $this->actingAs(User::factory()->admin()->create());
+
+        Livewire::test(EditFootballFixture::class, ['record' => $fixture->getRouteKey()])
+            ->assertOk();
+
+        $this->assertContains(
+            FixtureBroadcastsRelationManager::class,
+            FootballFixtureResource::getRelations(),
+        );
     }
 }

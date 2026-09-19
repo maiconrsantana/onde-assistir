@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FootballFixtures\Pages;
 
 use App\Filament\Resources\FootballFixtures\FootballFixtureResource;
+use App\Services\Operations\PublicScheduleCache;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
@@ -17,5 +18,10 @@ class EditFootballFixture extends EditRecord
             ViewAction::make(),
             DeleteAction::make(),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        app(PublicScheduleCache::class)->invalidate();
     }
 }

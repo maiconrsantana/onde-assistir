@@ -137,6 +137,31 @@ class PublicScheduleTest extends TestCase
             ->assertSeeText('Transmissao ainda nao divulgada');
     }
 
+    public function test_unpublished_broadcast_is_removed_from_public_schedule(): void
+    {
+        $fixture = FootballFixture::factory()->create([
+            'starts_at' => Carbon::parse('2026-09-20 11:00:00', 'America/Sao_Paulo')->utc(),
+            'review_status' => FootballFixture::REVIEW_APPROVED,
+            'publication_status' => FootballFixture::PUBLICATION_PUBLISHED,
+        ]);
+        $broadcaster = Broadcaster::factory()->create(['name' => 'Transmissao retirada']);
+
+        FixtureBroadcast::factory()->create([
+            'football_fixture_id' => $fixture->id,
+            'broadcaster_id' => $broadcaster->id,
+            'needs_review' => false,
+            'review_status' => FixtureBroadcast::REVIEW_APPROVED,
+            'publication_status' => FixtureBroadcast::PUBLICATION_UNPUBLISHED,
+        ]);
+
+        $response = $this->get(route('public.schedule'));
+
+        $response
+            ->assertOk()
+            ->assertDontSeeText('Transmissao retirada')
+            ->assertSeeText('Transmissao ainda nao divulgada');
+    }
+
     public function test_public_schedule_has_empty_state_without_published_fixtures(): void
     {
         FootballFixture::factory()->create([

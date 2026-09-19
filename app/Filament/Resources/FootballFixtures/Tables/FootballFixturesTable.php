@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\FootballFixtures\Tables;
 
 use App\Models\FootballFixture;
+use App\Services\Operations\PublicScheduleCache;
+use App\Services\Publication\FixturePublicationApprover;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -13,7 +15,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class FootballFixturesTable
 {
@@ -38,6 +39,11 @@ class FootballFixturesTable
                 TextColumn::make('awayTeam.name')
                     ->label('Visitante')
                     ->searchable(),
+                TextColumn::make('fixture_broadcasts_count')
+                    ->label('Transmissões')
+                    ->formatStateUsing(fn (int $state): string => $state > 0 ? "Sim ({$state})" : 'Não')
+                    ->badge()
+                    ->color(fn (int $state): string => $state > 0 ? 'success' : 'gray'),
                 TextColumn::make('resolution_status')
                     ->label('Resolução')
                     ->badge()
@@ -56,6 +62,7 @@ class FootballFixturesTable
                     ->badge()
                     ->color(fn (string $state): string => $state === FootballFixture::PUBLICATION_PUBLISHED ? 'success' : 'gray'),
             ])
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->withCount('fixtureBroadcasts'))
             ->filters([
                 SelectFilter::make('competition_id')
                     ->label('Competição')
@@ -101,17 +108,24 @@ class FootballFixturesTable
             ->recordActions([
                 ViewAction::make(),
                 Action::make('approve_review')
-                    ->label('Aprovar')
+                    ->label('Aprovar e publicar')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->action(function (FootballFixture $record): void {
-                        $record->fixtureBroadcasts()->update(['needs_review' => false]);
+                    ->visible(fn (FootballFixture $record): bool => $record->publication_status !== FootballFixture::PUBLICATION_PUBLISHED)
+                    ->action(fn (FootballFixture $record, FixturePublicationApprover $approver) => $approver->approveAndPublish($record, auth()->user())),
+                Action::make('unpublish')
+                    ->label('Retirar do ar')
+                    ->icon('heroicon-o-eye-slash')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (FootballFixture $record): bool => $record->publication_status === FootballFixture::PUBLICATION_PUBLISHED)
+                    ->action(function (FootballFixture $record, PublicScheduleCache $cache): void {
                         $record->forceFill([
-                            'review_status' => FootballFixture::REVIEW_APPROVED,
-                            'approved_by' => Auth::id(),
-                            'approved_at' => now()->utc(),
+                            'publication_status' => FootballFixture::PUBLICATION_UNPUBLISHED,
                         ])->save();
+
+                        $cache->invalidate();
                     }),
                 EditAction::make(),
             ])

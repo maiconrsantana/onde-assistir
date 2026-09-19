@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FixtureBroadcasts\Pages;
 use App\Filament\Resources\FixtureBroadcasts\FixtureBroadcastResource;
 use App\Models\FixtureBroadcast;
 use App\Services\Broadcast\ManualBroadcastRecorder;
+use App\Services\Operations\PublicScheduleCache;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
@@ -36,5 +37,6 @@ class EditFixtureBroadcast extends EditRecord
     protected function afterSave(): void
     {
         app(ManualBroadcastRecorder::class)->record($this->record);
+        app(PublicScheduleCache::class)->invalidate();
     }
 }

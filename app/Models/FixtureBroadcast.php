@@ -26,6 +26,18 @@ class FixtureBroadcast extends Model
 
     public const SOURCE_MANUAL = 'manual';
 
+    public const REVIEW_PENDING = 'pending';
+
+    public const REVIEW_APPROVED = 'approved';
+
+    public const REVIEW_REJECTED = 'rejected';
+
+    public const PUBLICATION_DRAFT = 'draft';
+
+    public const PUBLICATION_PUBLISHED = 'published';
+
+    public const PUBLICATION_UNPUBLISHED = 'unpublished';
+
     protected $guarded = [];
 
     /**
