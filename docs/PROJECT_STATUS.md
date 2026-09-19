@@ -81,9 +81,10 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - Comandos automaticos registram inicio, fim, duracao, totais e falhas no log; o dashboard do Filament sinaliza automacoes desatualizadas ou com erro.
 - URLs de fontes passam por validacao central para aceitar somente `http` e `https`; o fluxo integrado provider -> sincronizador -> banco -> pagina/API esta coberto por teste.
 - Retencao de payloads implementada com `football:prune-raw-data`, simulacao padrao e execucao explicita; logs diarios suportam retencao configuravel por `LOG_DAILY_DAYS`.
+- O health check operacional usa a rota nativa `/up` do Laravel e esta coberto por teste automatizado.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
 - Endurecer o MVP com filtros, SEO, estados de erro/vazio e revisao visual em dados reais.
-- Completar a Etapa 9 com observabilidade, revisão de segurança, health check operacional e validação final do fluxo provider -> sincronizador -> banco -> API/página.
+- Concluir a revisão visual com dados reais e decidir a evolução dos filtros da API para consultas diretamente no banco em volumes maiores.

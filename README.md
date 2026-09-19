@@ -101,6 +101,8 @@ source .node-env && npm run build
 CACHE_STORE=array php artisan schedule:list
 ```
 
+O health check operacional fica disponivel em `/up`.
+
 ## Publicacao
 
 O modo padrao e manual. Transmissoes encontradas automaticamente ficam em rascunho ate revisao/aprovacao no painel administrativo.
