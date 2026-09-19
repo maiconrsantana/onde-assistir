@@ -65,6 +65,12 @@ php artisan make:filament-user
 
 Depois ajuste o campo `is_admin` desse usuário para `1` no MySQL.
 
+## Interface publica
+
+A rota `/` exibe a agenda publica. Ela le apenas dados locais publicados e aprovados, sem consultar API-Football, TheSportsDB ou OpenAI durante a request do visitante.
+
+Jogos sem transmissao publicavel exibem `Transmissao ainda nao divulgada`.
+
 ## Validacao
 
 ```bash

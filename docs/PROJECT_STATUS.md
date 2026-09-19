@@ -1,10 +1,10 @@
 # Status do Projeto
 
-Atualizado em: 2026-09-18
+Atualizado em: 2026-09-19
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 5.1 — Interface publica**.
+Proxima etapa recomendada: **Etapa 9 — Endurecimento do MVP**.
 
 ## Etapas
 
@@ -17,7 +17,7 @@ Proxima etapa recomendada: **Etapa 5.1 — Interface publica**.
 | 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
 | 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
-| 5.1 — Interface publica | Pendente | Proximo passo para exibir somente dados publicados. |
+| 5.1 — Interface publica | Concluida | Rota `/` exibe agenda publica somente com jogos publicados e aprovados. |
 | 6 — Scheduler, filas e cache | Concluida | Scheduler registrado, status operacional em cache e invalidação do cache publico em sucesso. |
 | 7 — OpenAI para transmissoes ausentes | Concluida | `football:resolve-openai-broadcasts` usa Responses API com web search e schema estruturado. |
 | 8 — Painel administrativo | Concluida | Filament instalado em `/admin`, com recursos para partidas, emissoras e transmissoes. |
@@ -41,6 +41,7 @@ Proxima etapa recomendada: **Etapa 5.1 — Interface publica**.
 - Etapa 6: `CACHE_STORE=array php artisan schedule:list`.
 - Etapa 7: `php artisan football:resolve-openai-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD --limit=10`.
 - Etapa 8: `/admin`.
+- Etapa 5.1: `/`.
 
 ## Decisoes Permanentes
 
@@ -70,9 +71,12 @@ Proxima etapa recomendada: **Etapa 5.1 — Interface publica**.
 - Filament 5 fica em `/admin`; usuarios precisam de `is_admin=true` para acessar.
 - Alteracoes manuais de transmissao gravam `broadcast_sources.provider=manual`.
 - Transmissoes manuais nao sao sobrescritas por resolucoes automaticas futuras.
+- A rota publica `/` nao chama APIs externas durante a request do visitante.
+- A agenda publica lista apenas partidas com `publication_status=published` e `review_status=approved`.
+- Transmissoes publicas sao filtradas por Brasil e precisam estar sem `needs_review`.
+- Jogos publicados sem transmissao publicavel exibem "Transmissao ainda nao divulgada".
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
-- Implementar interface publica com apenas dados publicados.
-- Ainda nao ha interface publica publicada.
+- Endurecer o MVP com filtros, SEO, estados de erro/vazio e revisao visual em dados reais.

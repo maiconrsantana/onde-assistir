@@ -176,6 +176,16 @@ Recursos atuais:
 
 Alteracoes manuais usam `source_type=manual`, geram historico em `broadcast_sources` com `provider=manual` e preservam o usuario responsavel no payload sanitizado. O resolvedor automatico nao sobrescreve transmissao manual existente para a mesma partida, emissora e pais.
 
+### Interface publica
+
+A pagina publica fica na rota `/` e usa `App\Http\Controllers\PublicScheduleController`.
+
+A consulta da agenda fica em `App\Services\PublicSchedule\PublishedFixtureSchedule` para manter a regra publica fora da view. A pagina lista somente partidas futuras dos proximos 30 dias com `publication_status=published` e `review_status=approved`.
+
+Transmissoes exibidas ao visitante sao carregadas de `fixture_broadcasts` apenas quando `country_code=BR` e `needs_review=false`. Se uma partida publicada nao tiver transmissao publicavel, a tela mostra "Transmissao ainda nao divulgada".
+
+A request publica nao chama API-Football, TheSportsDB nem OpenAI. Ela consulta dados locais e usa `App\Services\Operations\PublicScheduleCache`, invalidado pelos fluxos de sincronizacao/resolucao quando concluem com sucesso.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.
