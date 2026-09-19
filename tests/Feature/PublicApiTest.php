@@ -71,6 +71,8 @@ class PublicApiTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.0.id', $fixture->id)
+            ->assertJsonPath('data.0.starts_at', '2026-09-20T22:30:00+00:00')
+            ->assertJsonPath('data.0.starts_at_brasilia', '2026-09-20T19:30:00-03:00')
             ->assertJsonPath('data.0.timezone', 'America/Sao_Paulo')
             ->assertJsonPath('data.0.broadcasts.0.broadcaster.name', 'Canal API')
             ->assertJsonPath('data.0.broadcasts.0.source_url', 'https://example.com/onde-assistir')

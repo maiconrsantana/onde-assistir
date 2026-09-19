@@ -16,7 +16,7 @@ class ProbeFootballProviderCommand extends Command
         {--days=7 : Number of days to include when --to is not provided}
         {--json : Output normalized fixtures as JSON}';
 
-    protected $description = 'Fetch and summarize API-Football fixtures without persisting data.';
+    protected $description = 'Fetch and summarize football provider fixtures without persisting data.';
 
     public function handle(FootballDataProvider $provider): int
     {

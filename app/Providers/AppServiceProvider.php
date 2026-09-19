@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\BroadcastFinder;
 use App\Contracts\FootballDataProvider;
-use App\Integrations\ApiFootball\ApiFootballProvider;
+use App\Integrations\FootballData\FootballDataProvider as FootballDataHttpProvider;
 use App\Integrations\OpenAI\OpenAIBroadcastFinder;
 use App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder;
 use Illuminate\Support\ServiceProvider;
@@ -16,14 +16,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(FootballDataProvider::class, fn () => new ApiFootballProvider(
-            baseUrl: config('services.api_football.base_url'),
-            key: config('services.api_football.key'),
-            leagueId: config('services.api_football.brasileirao_league_id'),
-            season: config('services.api_football.season'),
-            timeout: config('services.api_football.timeout'),
-            retryTimes: config('services.api_football.retry_times'),
-            retrySleep: config('services.api_football.retry_sleep'),
+        $this->app->bind(FootballDataProvider::class, fn () => new FootballDataHttpProvider(
+            baseUrl: config('services.football_data.base_url'),
+            token: config('services.football_data.token'),
+            competition: config('services.football_data.competition'),
+            season: config('services.football_data.season'),
+            timeout: config('services.football_data.timeout'),
+            retryTimes: config('services.football_data.retry_times'),
+            retrySleep: config('services.football_data.retry_sleep'),
         ));
 
         $this->app->bind(BroadcastFinder::class, fn () => new TheSportsDbBroadcastFinder(
@@ -33,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
             retryTimes: config('services.thesportsdb.retry_times'),
             retrySleep: config('services.thesportsdb.retry_sleep'),
             country: config('services.thesportsdb.country'),
+            leagueId: config('services.thesportsdb.league_id'),
         ));
 
         $this->app->bind(OpenAIBroadcastFinder::class, fn () => new OpenAIBroadcastFinder(

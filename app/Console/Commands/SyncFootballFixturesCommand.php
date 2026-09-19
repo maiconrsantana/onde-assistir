@@ -18,7 +18,7 @@ class SyncFootballFixturesCommand extends Command
         {--to= : End date in YYYY-MM-DD format}
         {--days=7 : Number of days to include when --to is not provided}';
 
-    protected $description = 'Fetch API-Football fixtures and persist them idempotently.';
+    protected $description = 'Fetch football provider fixtures and persist them idempotently.';
 
     public function handle(
         FootballDataProvider $provider,

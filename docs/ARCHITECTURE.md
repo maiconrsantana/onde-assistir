@@ -14,7 +14,7 @@ O bootstrap do Laravel ja esta funcional via Apache em `https://maicon.receiv.it
 - Testes: devem ser executados contra banco isolado. Se forem executados em MySQL, use um database proprio de teste e nunca o banco de desenvolvimento/producao.
 - Timezone da aplicacao: `America/Sao_Paulo`.
 - Estrategia de datas futuras: persistir instantes de partidas em UTC e converter para `America/Sao_Paulo` na apresentacao.
-- Provedor esportivo planejado: API-Football atras de uma interface.
+- Provedor esportivo: football-data.org atras de uma interface.
 - Provedor de transmissao planejado: TheSportsDB antes de qualquer fallback por IA.
 - IA planejada: OpenAI Responses API apenas como fallback para transmissao ausente, conflitante ou vencida.
 - Publicacao planejada: modo manual por padrao; pagina publica exibe somente registros publicados.
@@ -22,7 +22,7 @@ O bootstrap do Laravel ja esta funcional via Apache em `https://maicon.receiv.it
 ## Fluxo Planejado
 
 1. Modelar competicoes, times, partidas, emissoras e transmissoes.
-2. Buscar partidas via contrato de provedor esportivo API-Football.
+2. Buscar partidas via contrato de provedor esportivo football-data.org.
 3. Sincronizar os dados de forma idempotente.
 4. Resolver transmissoes via TheSportsDB e, somente quando necessario, OpenAI.
 5. Avaliar confiabilidade e manter historico de evidencias.
@@ -34,7 +34,7 @@ O bootstrap do Laravel ja esta funcional via Apache em `https://maicon.receiv.it
 
 ### `competitions`
 
-Representa campeonatos e temporadas importados de um provedor. `provider + external_id` e unico para permitir que a API-Football, ou outro provedor futuro, tenha seus proprios identificadores sem conflito global. `slug` e unico para URLs e filtros internos.
+Representa campeonatos e temporadas importados de um provedor. `provider + external_id` e unico para permitir que o football-data.org, ou outro provedor futuro, tenha seus proprios identificadores sem conflito global. `slug` e unico para URLs e filtros internos.
 
 ### `teams`
 
@@ -58,7 +58,7 @@ Catalogo de emissoras/plataformas. O campo `type` aceita `tv_open`, `tv_closed`,
 
 ### `fixture_provider_mappings`
 
-Mapeia uma partida local para eventos externos de provedores diferentes, como API-Football e TheSportsDB. Isso e necessario porque os provedores nao compartilham os mesmos IDs.
+Mapeia uma partida local para eventos externos de provedores diferentes, como football-data.org e TheSportsDB. Isso e necessario porque os provedores nao compartilham os mesmos IDs.
 
 ### `broadcast_sources`
 
@@ -92,21 +92,21 @@ Controla revisao e publicacao por competicao, temporada e rodada. Sera usado pel
 
 ## Integracoes
 
-- API-Football: jogos, participantes, datas, horarios, rodadas e resultados.
+- football-data.org: jogos, participantes, datas, horarios, rodadas e resultados do Brasileirao.
 - TheSportsDB: descoberta inicial de canais/plataformas de transmissao.
 - OpenAI: fallback controlado para transmissao, com structured output e fontes.
 - GitHub: repositorio `maiconrsantana/onde-assistir`.
 
-### API-Football
+### football-data.org
 
-O contrato interno e `App\Contracts\FootballDataProvider`. A implementacao atual e `App\Integrations\ApiFootball\ApiFootballProvider`.
+O contrato interno e `App\Contracts\FootballDataProvider`. A implementacao atual e `App\Integrations\FootballData\FootballDataProvider`.
 
 Endpoints e regras usados:
 
-- Base URL padrao: `https://v3.football.api-sports.io`.
-- Autenticacao: header `x-apisports-key`.
-- Endpoint: `GET /fixtures`.
-- Filtros usados: `league`, `season`, `from`, `to`, `timezone=UTC` e `page`.
+- Base URL padrao: `https://api.football-data.org/v4`.
+- Autenticacao: header `X-Auth-Token`.
+- Endpoint: `GET /competitions/BSA/matches`.
+- Filtros usados: `season`, `dateFrom` e `dateTo`.
 - O provider retorna DTOs normalizados e nao grava no banco.
 - O comando `football:probe-provider` permite validar a integracao com chave real sem persistir dados.
 - O comando `football:sync` usa os DTOs do provider e persiste competicoes, times e partidas de forma idempotente.
@@ -114,9 +114,9 @@ Endpoints e regras usados:
 
 Fontes consultadas:
 
-- https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide
-- https://www.api-football.com/news/post/how-to-optimize-api-sports-calls-and-quota-usage
-- https://www.api-football.com/news/post/fifa-world-cup-2026-guide-to-using-data-with-api-sports
+- https://www.football-data.org/coverage
+- https://docs.football-data.org/general/v4/lookup_tables.html
+- https://www.football-data.org/documentation/quickstart
 
 ### Sincronizacao de jogos
 
@@ -133,6 +133,8 @@ Cada partida e processada em uma transacao propria. Se uma partida estiver inval
 O contrato interno para transmissao e `App\Contracts\BroadcastFinder`. A implementacao atual e `App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder`.
 
 O comando `football:resolve-broadcasts` seleciona partidas locais por data e status de resolucao, consulta a TheSportsDB e passa o resultado para `App\Services\Broadcast\BroadcastResolver`.
+
+A busca de eventos usa `eventsday.php` com a data local da partida e a liga do Brasileirao (`THESPORTSDB_LEAGUE_ID=4351`). A resposta e reutilizada por data durante a execucao; depois do casamento por mandante, visitante, data e competicao, o sistema consulta `lookuptv.php` para descobrir canais. O plano gratuito possui limite de resultados por data, portanto partidas que nao couberem no retorno permanecem candidatas ao fallback da OpenAI.
 
 O resolvedor persiste:
 
@@ -192,7 +194,7 @@ A consulta da agenda fica em `App\Services\PublicSchedule\PublishedFixtureSchedu
 
 Transmissoes exibidas ao visitante sao carregadas de `fixture_broadcasts` apenas quando `country_code=BR`, `needs_review=false`, `review_status=approved` e `publication_status=published`. O painel permite editar esses estados e retirar uma transmissao individual do ar. Se uma partida publicada nao tiver transmissao publicavel, a tela mostra "Transmissao ainda nao divulgada".
 
-A request publica nao chama API-Football, TheSportsDB nem OpenAI. Ela consulta dados locais e usa `App\Services\Operations\PublicScheduleCache`, invalidado pelos fluxos de sincronizacao/resolucao quando concluem com sucesso.
+A request publica nao chama o provedor de jogos, TheSportsDB nem OpenAI. Ela consulta dados locais e usa `App\Services\Operations\PublicScheduleCache`, invalidado pelos fluxos de sincronizacao/resolucao quando concluem com sucesso.
 
 ### API para clientes mobile
 
@@ -204,7 +206,7 @@ URLs de fontes externas sao normalizadas por `App\Support\ExternalUrl` antes de 
 
 ## Riscos
 
-- Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.
+- Credenciais de football-data.org, TheSportsDB e OpenAI dependem do `.env` local.
 - MySQL depende de banco/usuario reais no `.env` local.
 - Dados de transmissao podem estar ausentes, atrasados ou conflitantes.
 - Regras de timezone precisam continuar cobertas por testes nas proximas telas e jobs.

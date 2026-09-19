@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $competition = Competition::factory()->create([
-            'provider' => 'api_football',
+            'provider' => 'football_data',
             'external_id' => 'api-football-brasileirao-serie-a-2026',
             'name' => 'Campeonato Brasileiro Serie A',
             'slug' => 'campeonato-brasileiro-serie-a',
@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Flamengo', 'short_name' => 'FLA'],
             ['name' => 'Sao Paulo', 'short_name' => 'SAO'],
         ])->map(fn (array $team, int $index) => Team::factory()->create([
-            'provider' => 'api_football',
+            'provider' => 'football_data',
             'external_id' => 'team-'.($index + 1),
             'name' => $team['name'],
             'short_name' => $team['short_name'],

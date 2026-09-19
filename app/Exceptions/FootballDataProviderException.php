@@ -8,18 +8,18 @@ class FootballDataProviderException extends RuntimeException
 {
     public static function missingConfiguration(string $key): self
     {
-        return new self("Missing API-Football configuration: {$key}");
+        return new self("Missing football data provider configuration: {$key}");
     }
 
     public static function requestFailed(int $status, string $message = ''): self
     {
         $suffix = $message !== '' ? " {$message}" : '';
 
-        return new self("API-Football request failed with HTTP {$status}.{$suffix}");
+        return new self("Football data provider request failed with HTTP {$status}.{$suffix}");
     }
 
     public static function invalidPayload(string $reason): self
     {
-        return new self("API-Football returned an invalid payload: {$reason}");
+        return new self("Football data provider returned an invalid payload: {$reason}");
     }
 }

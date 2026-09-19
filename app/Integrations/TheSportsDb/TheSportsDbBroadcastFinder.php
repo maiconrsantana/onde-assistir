@@ -27,7 +27,11 @@ class TheSportsDbBroadcastFinder implements BroadcastFinder
         private readonly int $retryTimes = 2,
         private readonly int $retrySleep = 500,
         private readonly string $country = 'Brazil',
+        private readonly ?string $leagueId = '4351',
     ) {}
+
+    /** @var array<string, array<string, mixed>> */
+    private array $eventsByDate = [];
 
     public function findForFixture(FootballFixture $fixture): BroadcastSearchResult
     {
@@ -121,10 +125,18 @@ class TheSportsDbBroadcastFinder implements BroadcastFinder
      */
     private function searchEvent(FootballFixture $fixture): array
     {
-        return $this->get('searchevents.php', [
-            'e' => $fixture->homeTeam->name.'_vs_'.$fixture->awayTeam->name,
-            'd' => CarbonImmutable::parse($fixture->starts_at)->setTimezone(config('app.timezone'))->toDateString(),
-        ]);
+        $date = CarbonImmutable::parse($fixture->starts_at)
+            ->setTimezone(config('app.timezone'))
+            ->toDateString();
+
+        if (! array_key_exists($date, $this->eventsByDate)) {
+            $this->eventsByDate[$date] = $this->get('eventsday.php', [
+                'd' => $date,
+                'l' => $this->leagueId,
+            ]);
+        }
+
+        return $this->eventsByDate[$date];
     }
 
     /**
@@ -208,11 +220,11 @@ class TheSportsDbBroadcastFinder implements BroadcastFinder
      */
     private function matchScore(FootballFixture $fixture, array $event): float
     {
-        $homeName = $this->normalizeName($fixture->homeTeam->name);
-        $awayName = $this->normalizeName($fixture->awayTeam->name);
-        $eventHomeName = $this->normalizeName((string) data_get($event, 'strHomeTeam', ''));
-        $eventAwayName = $this->normalizeName((string) data_get($event, 'strAwayTeam', ''));
-        $eventName = $this->normalizeName((string) data_get($event, 'strEvent', ''));
+        $homeName = $this->normalizeTeamName($fixture->homeTeam->name);
+        $awayName = $this->normalizeTeamName($fixture->awayTeam->name);
+        $eventHomeName = $this->normalizeTeamName((string) data_get($event, 'strHomeTeam', ''));
+        $eventAwayName = $this->normalizeTeamName((string) data_get($event, 'strAwayTeam', ''));
+        $eventName = $this->normalizeTeamName((string) data_get($event, 'strEvent', ''));
 
         $score = 0.0;
 
@@ -262,6 +274,25 @@ class TheSportsDbBroadcastFinder implements BroadcastFinder
             ->ascii()
             ->lower()
             ->replaceMatches('/[^a-z0-9]+/', ' ')
+            ->squish()
+            ->toString();
+    }
+
+    private function normalizeTeamName(string $value): string
+    {
+        $normalized = $this->normalizeName($value);
+        $aliases = [
+            'ca mineiro' => 'atletico mineiro',
+            'atletico mineiro' => 'atletico mineiro',
+            'clube do remo' => 'remo',
+        ];
+
+        if (isset($aliases[$normalized])) {
+            return $aliases[$normalized];
+        }
+
+        return Str::of($normalized)
+            ->replaceMatches('/\b(fc|ec|sc|se|cr|ca|fr|fbc|fbpa|af|rb|paulista)\b/', '')
             ->squish()
             ->toString();
     }

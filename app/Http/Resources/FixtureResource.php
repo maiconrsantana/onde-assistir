@@ -20,7 +20,8 @@ class FixtureResource extends JsonResource
             'id' => $this->id,
             'external_id' => $this->external_id,
             'starts_at' => $this->starts_at?->utc()->toIso8601String(),
-            'timezone' => 'America/Sao_Paulo',
+            'starts_at_brasilia' => $this->starts_at?->timezone(config('app.timezone'))->toIso8601String(),
+            'timezone' => config('app.timezone'),
             'competition' => [
                 'id' => $this->competition?->id,
                 'name' => $this->competition?->name,

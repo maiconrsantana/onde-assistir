@@ -19,8 +19,9 @@ class PublishedFixtureSchedule
     public function upcoming(): Collection
     {
         return $this->cache->remember(function (): Collection {
-            $from = now('America/Sao_Paulo')->startOfDay()->utc();
-            $to = now('America/Sao_Paulo')->addDays(30)->endOfDay()->utc();
+            $timezone = config('app.timezone', 'America/Sao_Paulo');
+            $from = now($timezone)->startOfDay()->utc();
+            $to = now($timezone)->addDays(30)->endOfDay()->utc();
 
             return FootballFixture::query()
                 ->with([
@@ -54,7 +55,7 @@ class PublishedFixtureSchedule
         return $fixtures
             ->groupBy(fn (FootballFixture $fixture): string => $fixture->starts_at
                 ->copy()
-                ->timezone('America/Sao_Paulo')
+                ->timezone(config('app.timezone', 'America/Sao_Paulo'))
                 ->toDateString())
             ->all();
     }

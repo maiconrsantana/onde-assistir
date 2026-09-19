@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\FootballDataProvider;
 use App\Exceptions\FootballDataProviderException;
+use App\Integrations\ApiFootball\ApiFootballProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
 use JsonException;
@@ -147,6 +148,16 @@ class ApiFootballProviderTest extends TestCase
             'services.api_football.retry_times' => 0,
             'services.api_football.retry_sleep' => 0,
         ]);
+
+        $this->app->bind(FootballDataProvider::class, fn () => new ApiFootballProvider(
+            baseUrl: config('services.api_football.base_url'),
+            key: config('services.api_football.key'),
+            leagueId: config('services.api_football.brasileirao_league_id'),
+            season: config('services.api_football.season'),
+            timeout: config('services.api_football.timeout'),
+            retryTimes: config('services.api_football.retry_times'),
+            retrySleep: config('services.api_football.retry_sleep'),
+        ));
     }
 
     /**

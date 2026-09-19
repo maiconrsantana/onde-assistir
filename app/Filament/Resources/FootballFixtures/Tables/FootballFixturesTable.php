@@ -25,6 +25,7 @@ class FootballFixturesTable
                 TextColumn::make('starts_at')
                     ->label('Data')
                     ->dateTime('d/m/Y H:i')
+                    ->timezone(config('app.timezone'))
                     ->sortable(),
                 TextColumn::make('competition.name')
                     ->label('Competição')

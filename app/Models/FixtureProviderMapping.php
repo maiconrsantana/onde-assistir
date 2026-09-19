@@ -14,6 +14,8 @@ class FixtureProviderMapping extends Model
 
     public const PROVIDER_API_FOOTBALL = 'api_football';
 
+    public const PROVIDER_FOOTBALL_DATA = 'football_data';
+
     public const PROVIDER_THESPORTSDB = 'sportsdb';
 
     protected $guarded = [];

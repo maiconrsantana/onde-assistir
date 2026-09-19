@@ -23,7 +23,7 @@ php artisan migrate:fresh --seed
 Configure as credenciais reais apenas no `.env` local:
 
 ```env
-API_FOOTBALL_KEY=
+FOOTBALL_DATA_API_TOKEN=
 THESPORTSDB_API_KEY=
 OPENAI_API_KEY=
 ```
@@ -69,7 +69,7 @@ No recurso de partidas, use **Aprovar e publicar** para marcar o jogo como revis
 
 ## Interface publica
 
-A rota `/` exibe a agenda publica. Ela le apenas dados locais publicados e aprovados, sem consultar API-Football, TheSportsDB ou OpenAI durante a request do visitante.
+A rota `/` exibe a agenda publica. Ela le apenas dados locais publicados e aprovados, sem consultar o provedor de jogos, TheSportsDB ou OpenAI durante a request do visitante.
 
 Jogos sem transmissao publicavel exibem `Transmissao ainda nao divulgada`.
 
@@ -86,7 +86,7 @@ GET /api/v1/fixtures?competition_id=1&team_id=2
 GET /api/v1/fixtures/{id}
 ```
 
-As datas sao retornadas em ISO 8601 UTC e o campo `timezone` informa `America/Sao_Paulo` para a apresentacao no aplicativo. A API e publica, possui limite de requisicoes e nao expoe `raw_payload`.
+As datas sao retornadas em ISO 8601 UTC no campo `starts_at` e em horario de Brasilia no campo `starts_at_brasilia`. O campo `timezone` informa `America/Sao_Paulo` para a apresentacao no aplicativo. A API e publica, possui limite de requisicoes e nao expoe `raw_payload`.
 
 O dashboard administrativo mostra o status das automacoes. Para consultar o diagnostico em texto, use `php artisan football:automation-status`; os eventos detalhados ficam no log Laravel.
 

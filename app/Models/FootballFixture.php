@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\UtcDateTime;
 use Database\Factories\FootballFixtureFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -124,7 +125,7 @@ class FootballFixture extends Model
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime',
+            'starts_at' => UtcDateTime::class,
             'raw_payload' => 'array',
             'synced_at' => 'datetime',
             'resolved_at' => 'datetime',

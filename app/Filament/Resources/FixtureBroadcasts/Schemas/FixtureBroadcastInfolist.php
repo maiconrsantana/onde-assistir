@@ -14,7 +14,8 @@ class FixtureBroadcastInfolist
             ->components([
                 TextEntry::make('fixture.starts_at')
                     ->label('Data')
-                    ->dateTime('d/m/Y H:i'),
+                    ->dateTime('d/m/Y H:i')
+                    ->timezone(config('app.timezone')),
                 TextEntry::make('fixture.homeTeam.name')
                     ->label('Mandante'),
                 TextEntry::make('fixture.awayTeam.name')

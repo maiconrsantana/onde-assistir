@@ -35,14 +35,14 @@ return [
         ],
     ],
 
-    'api_football' => [
-        'base_url' => env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io'),
-        'key' => env('API_FOOTBALL_KEY'),
-        'brasileirao_league_id' => env('API_FOOTBALL_BRASILEIRAO_LEAGUE_ID'),
-        'season' => env('API_FOOTBALL_SEASON', date('Y')),
-        'timeout' => (int) env('API_FOOTBALL_TIMEOUT', 15),
-        'retry_times' => (int) env('API_FOOTBALL_RETRY_TIMES', 2),
-        'retry_sleep' => (int) env('API_FOOTBALL_RETRY_SLEEP', 500),
+    'football_data' => [
+        'base_url' => env('FOOTBALL_DATA_BASE_URL', 'https://api.football-data.org/v4'),
+        'token' => env('FOOTBALL_DATA_API_TOKEN'),
+        'competition' => env('FOOTBALL_DATA_COMPETITION', 'BSA'),
+        'season' => env('FOOTBALL_DATA_SEASON', date('Y')),
+        'timeout' => (int) env('FOOTBALL_DATA_TIMEOUT', 15),
+        'retry_times' => (int) env('FOOTBALL_DATA_RETRY_TIMES', 2),
+        'retry_sleep' => (int) env('FOOTBALL_DATA_RETRY_SLEEP', 500),
     ],
 
     'thesportsdb' => [
@@ -52,6 +52,7 @@ return [
         'retry_times' => (int) env('THESPORTSDB_RETRY_TIMES', 2),
         'retry_sleep' => (int) env('THESPORTSDB_RETRY_SLEEP', 500),
         'country' => env('THESPORTSDB_COUNTRY', 'Brazil'),
+        'league_id' => env('THESPORTSDB_LEAGUE_ID', '4351'),
     ],
 
     'openai' => [

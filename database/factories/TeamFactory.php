@@ -21,7 +21,7 @@ class TeamFactory extends Factory
         $name = 'Time '.fake()->unique()->numberBetween(1000, 999999);
 
         return [
-            'provider' => 'api_football',
+            'provider' => 'football_data',
             'external_id' => fake()->unique()->numberBetween(10000, 99999),
             'name' => $name,
             'short_name' => Str::upper(Str::substr($name, 0, 3)),

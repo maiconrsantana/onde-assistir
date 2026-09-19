@@ -37,6 +37,7 @@ class FootballFixtureForm
                     ->maxLength(255),
                 DateTimePicker::make('starts_at')
                     ->label('Data e hora')
+                    ->timezone(config('app.timezone'))
                     ->seconds(false)
                     ->required(),
                 TextInput::make('venue')

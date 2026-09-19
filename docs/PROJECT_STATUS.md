@@ -14,7 +14,7 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 | 1 — Bootstrap do projeto | Concluida | Laravel 12 instalado, executavel, testado e configurado para MySQL via `.env.example`. |
 | 2 — Dominio, migrations e models | Concluida | Schema, models, factories, seeder e testes criados. |
 | 2.1 — Escopo de transmissao e publicacao | Concluida | Dominio adaptado para TheSportsDB, OpenAI fallback, revisao e publicacao manual. |
-| 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
+| 3 — Provedor esportivo | Concluida | Contrato, DTOs, provider HTTP do football-data.org, comando de diagnostico e testes fake criados. |
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
 | 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
 | 5.1 — Interface publica | Concluida | Rota `/` exibe agenda publica somente com jogos publicados e aprovados. |
@@ -48,7 +48,7 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - `APP_TIMEZONE=America/Sao_Paulo` em `.env.example`.
 - `DB_CONNECTION=mysql` em `.env.example`, sem credenciais reais.
 - MySQL e o banco padrao para desenvolvimento/producao. O `.env` local deve apontar para um banco/usuario reais.
-- Chaves vazias adicionadas para API-Football, TheSportsDB e OpenAI.
+- Chaves vazias adicionadas para football-data.org, TheSportsDB e OpenAI.
 - `AGENTS.md` documenta os comandos operacionais do projeto.
 - Dominio persistente criado com `competitions`, `teams`, `football_fixtures`, `broadcasters` e `fixture_broadcasts`.
 - `confidence` de transmissao e decimal de 0 a 1, alinhado ao uso futuro com OpenAI.
@@ -56,7 +56,7 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - Historico de evidencias separado em `broadcast_sources`.
 - Mapeamento de IDs externos separado em `fixture_provider_mappings`.
 - Modo de publicacao persistente padrao: `manual`.
-- API-Football fica atras de `FootballDataProvider`.
+- football-data.org fica atras de `FootballDataProvider`; API-Football permanece apenas como adaptador legado testado.
 - A Etapa 3 normaliza dados em DTOs, sem persistir no banco.
 - `FixtureSynchronizer` persiste competicoes, times e partidas com `updateOrCreate`.
 - `football:sync` ainda nao consulta TheSportsDB nem OpenAI; transmissoes sao resolvidas em comando separado.

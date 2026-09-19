@@ -21,7 +21,7 @@ class FootballFixtureFactory extends Factory
     {
         return [
             'competition_id' => Competition::factory(),
-            'provider' => 'api_football',
+            'provider' => 'football_data',
             'external_id' => fake()->unique()->numberBetween(100000, 999999),
             'home_team_id' => Team::factory(),
             'away_team_id' => Team::factory(),

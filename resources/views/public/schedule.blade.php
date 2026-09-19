@@ -41,7 +41,7 @@
             <section class="mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:px-8">
                 @forelse ($fixturesByDate as $date => $dayFixtures)
                     @php
-                        $dateForDisplay = \Illuminate\Support\Carbon::parse($date, 'America/Sao_Paulo');
+                        $dateForDisplay = \Illuminate\Support\Carbon::parse($date, config('app.timezone'));
                     @endphp
 
                     <section class="mb-8">
@@ -57,7 +57,7 @@
                         <div class="space-y-3">
                             @foreach ($dayFixtures as $fixture)
                                 @php
-                                    $localStart = $fixture->starts_at->copy()->timezone('America/Sao_Paulo');
+                                    $localStart = $fixture->starts_at->copy()->timezone(config('app.timezone'));
                                 @endphp
 
                                 <article class="border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">

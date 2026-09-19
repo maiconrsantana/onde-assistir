@@ -1,0 +1,71 @@
+{
+  "filters": {
+    "dateFrom": "2026-09-17",
+    "dateTo": "2026-09-24",
+    "permission": "TIER_ONE"
+  },
+  "resultSet": {
+    "count": 1,
+    "first": "2026-09-20",
+    "last": "2026-09-20",
+    "played": 0
+  },
+  "competition": {
+    "id": 2013,
+    "name": "Campeonato Brasileiro Série A",
+    "code": "BSA",
+    "type": "LEAGUE",
+    "emblem": "https://crests.football-data.org/764.svg"
+  },
+  "matches": [
+    {
+      "area": {
+        "id": 2032,
+        "name": "Brazil",
+        "code": "BRA",
+        "flag": "https://crests.football-data.org/764.svg"
+      },
+      "competition": {
+        "id": 2013,
+        "name": "Campeonato Brasileiro Série A",
+        "code": "BSA",
+        "type": "LEAGUE",
+        "emblem": "https://crests.football-data.org/764.svg"
+      },
+      "season": {
+        "id": 9999,
+        "startDate": "2026-04-01",
+        "endDate": "2026-12-06",
+        "currentMatchday": 25,
+        "winner": null
+      },
+      "id": 4500001,
+      "utcDate": "2026-09-20T22:30:00Z",
+      "status": "TIMED",
+      "matchday": 25,
+      "stage": "REGULAR_SEASON",
+      "group": null,
+      "lastUpdated": "2026-09-19T12:00:00Z",
+      "homeTeam": {
+        "id": 131,
+        "name": "Corinthians",
+        "shortName": "Corinthians",
+        "tla": "COR",
+        "crest": "https://crests.football-data.org/131.svg"
+      },
+      "awayTeam": {
+        "id": 1763,
+        "name": "Palmeiras",
+        "shortName": "Palmeiras",
+        "tla": "PAL",
+        "crest": "https://crests.football-data.org/1763.svg"
+      },
+      "score": {
+        "winner": null,
+        "duration": "REGULAR",
+        "fullTime": {"home": null, "away": null},
+        "halfTime": {"home": null, "away": null}
+      }
+    }
+  ]
+}

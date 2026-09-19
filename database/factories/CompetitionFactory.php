@@ -21,7 +21,7 @@ class CompetitionFactory extends Factory
         $name = 'Competicao '.fake()->unique()->numberBetween(1000, 999999);
 
         return [
-            'provider' => 'api_football',
+            'provider' => 'football_data',
             'external_id' => fake()->unique()->numberBetween(1000, 9999),
             'name' => $name,
             'slug' => Str::slug($name),

@@ -17,7 +17,8 @@ class FootballFixtureInfolist
                     ->label('Rodada'),
                 TextEntry::make('starts_at')
                     ->label('Data')
-                    ->dateTime('d/m/Y H:i'),
+                    ->dateTime('d/m/Y H:i')
+                    ->timezone(config('app.timezone')),
                 TextEntry::make('homeTeam.name')
                     ->label('Mandante'),
                 TextEntry::make('awayTeam.name')

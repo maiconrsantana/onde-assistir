@@ -20,8 +20,8 @@ class TheSportsDbBroadcastFinderTest extends TestCase
     public function test_finder_maps_brazilian_tv_channels_for_matching_event(): void
     {
         Http::fake([
-            'https://www.thesportsdb.com/api/v1/json/123/searchevents.php*' => Http::response([
-                'event' => [[
+            'https://www.thesportsdb.com/api/v1/json/123/eventsday.php*' => Http::response([
+                'events' => [[
                     'idEvent' => 'tsdb-100',
                     'strEvent' => 'Corinthians vs Palmeiras',
                     'strHomeTeam' => 'Corinthians',
@@ -55,8 +55,8 @@ class TheSportsDbBroadcastFinderTest extends TestCase
     public function test_finder_returns_uncertain_when_event_match_is_weak(): void
     {
         Http::fake([
-            'https://www.thesportsdb.com/api/v1/json/123/searchevents.php*' => Http::response([
-                'event' => [[
+            'https://www.thesportsdb.com/api/v1/json/123/eventsday.php*' => Http::response([
+                'events' => [[
                     'idEvent' => 'tsdb-200',
                     'strEvent' => 'Santos vs Flamengo',
                     'strHomeTeam' => 'Santos',
@@ -71,6 +71,38 @@ class TheSportsDbBroadcastFinderTest extends TestCase
 
         $this->assertSame(BroadcastSource::RESULT_UNCERTAIN, $result->status);
         $this->assertEqualsWithDelta(0.3, $result->calculatedConfidence, 0.0001);
+    }
+
+    public function test_finder_normalizes_provider_specific_team_names(): void
+    {
+        Http::fake([
+            'https://www.thesportsdb.com/api/v1/json/123/eventsday.php*' => Http::response([
+                'events' => [[
+                    'idEvent' => 'tsdb-300',
+                    'strEvent' => 'Corinthians vs Palmeiras',
+                    'strHomeTeam' => 'Corinthians',
+                    'strAwayTeam' => 'Palmeiras',
+                    'strLeague' => 'Serie A',
+                    'dateEvent' => '2026-09-18',
+                ]],
+            ]),
+            'https://www.thesportsdb.com/api/v1/json/123/lookuptv.php*' => Http::response([
+                'tvevent' => [[
+                    'strChannel' => 'Globo',
+                    'strCountry' => 'Brazil',
+                ]],
+            ]),
+        ]);
+
+        $fixture = $this->fixture();
+        $fixture->homeTeam->update(['name' => 'SC Corinthians Paulista']);
+        $fixture->awayTeam->update(['name' => 'SE Palmeiras']);
+        $fixture->load(['homeTeam', 'awayTeam']);
+
+        $result = $this->finder()->findForFixture($fixture);
+
+        $this->assertSame(BroadcastSource::RESULT_FOUND, $result->status);
+        $this->assertSame('tsdb-300', $result->externalEventId);
     }
 
     private function finder(): TheSportsDbBroadcastFinder
