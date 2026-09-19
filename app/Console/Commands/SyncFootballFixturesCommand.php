@@ -8,6 +8,7 @@ use App\Services\Operations\FootballAutomationStatus;
 use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SyncFootballFixturesCommand extends Command
@@ -25,7 +26,13 @@ class SyncFootballFixturesCommand extends Command
         FootballAutomationStatus $status,
         PublicScheduleCache $cache,
     ): int {
+        $startedAt = microtime(true);
         [$from, $to] = $this->dateRange();
+
+        Log::info('football.sync.started', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+        ]);
 
         $this->components->info("Sincronizando partidas de {$from->toDateString()} ate {$to->toDateString()}.");
 
@@ -33,6 +40,11 @@ class SyncFootballFixturesCommand extends Command
             $fixtures = $provider->fixturesBetween($from, $to);
         } catch (Throwable $exception) {
             $this->components->error($exception->getMessage());
+            Log::error('football.sync.failed', [
+                'duration_ms' => $this->durationMs($startedAt),
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
             $status->recordFailure('football:sync', $exception->getMessage());
 
             return self::FAILURE;
@@ -50,15 +62,30 @@ class SyncFootballFixturesCommand extends Command
         }
 
         if ($result->errors > 0) {
+            Log::warning('football.sync.completed_with_errors', [
+                'duration_ms' => $this->durationMs($startedAt),
+                'totals' => $result->totals(),
+            ]);
             $status->recordFailure('football:sync', 'Sincronizacao concluiu com erros.', $result->totals());
 
             return self::FAILURE;
         }
 
         $cache->invalidate();
-        $status->recordSuccess('football:sync', $result->totals());
+        $payload = array_merge($result->totals(), [
+            'duration_ms' => $this->durationMs($startedAt),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+        ]);
+        Log::info('football.sync.completed', ['totals' => $payload]);
+        $status->recordSuccess('football:sync', $payload);
 
         return self::SUCCESS;
+    }
+
+    private function durationMs(float $startedAt): int
+    {
+        return (int) round((microtime(true) - $startedAt) * 1000);
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Services\Operations\FootballAutomationStatus;
 use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
@@ -73,8 +74,27 @@ class FootballAutomationTest extends TestCase
 
         $this->artisan('football:automation-status')
             ->expectsOutputToContain('football:sync')
+            ->expectsOutputToContain('Atualização')
             ->assertExitCode(0);
 
         $this->assertSame('success', app(FootballAutomationStatus::class)->statusFor('football:sync')['last_status']);
+    }
+
+    public function test_automation_status_detects_stale_or_failed_data(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-19 12:00:00', 'America/Sao_Paulo'));
+        $status = app(FootballAutomationStatus::class);
+
+        $status->recordSuccess('football:sync');
+
+        $this->assertTrue($status->isFresh('football:sync'));
+
+        Carbon::setTestNow(Carbon::parse('2026-09-21 12:00:00', 'America/Sao_Paulo'));
+        $this->assertFalse($status->isFresh('football:sync'));
+
+        $status->recordFailure('football:sync', 'Falha de teste.');
+        $this->assertFalse($status->isFresh('football:sync'));
+
+        Carbon::setTestNow();
     }
 }

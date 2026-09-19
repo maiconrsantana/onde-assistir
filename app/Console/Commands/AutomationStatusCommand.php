@@ -16,6 +16,7 @@ class AutomationStatusCommand extends Command
         $this->table([
             'Comando',
             'Status',
+            'Atualização',
             'Ultimo sucesso',
             'Ultima falha',
             'Mensagem',
@@ -23,6 +24,7 @@ class AutomationStatusCommand extends Command
             ->map(fn (array $row): array => [
                 $row['command'],
                 $row['last_status'],
+                $status->isFresh($row['command']) ? 'atualizado' : 'desatualizado',
                 $row['last_success_at'] ?? '-',
                 $row['last_failure_at'] ?? '-',
                 $row['message'] ?? '-',

@@ -164,6 +164,8 @@ Os eventos usam `withoutOverlapping(120)` para evitar execucoes concorrentes. `o
 
 `football:refresh-broadcasts` roda TheSportsDB e depois OpenAI fallback. Os comandos registram ultimo sucesso/falha em `App\Services\Operations\FootballAutomationStatus`, usando cache. `football:automation-status` exibe esse diagnostico.
 
+As execucoes tambem registram eventos estruturados de inicio, conclusao e erro no log Laravel, com intervalo processado, duracao em milissegundos e totais. O dashboard do Filament exibe a saude das automacoes; uma rotina e considerada atualizada quando concluiu com sucesso nas ultimas 26 horas.
+
 `App\Services\Operations\PublicScheduleCache` centraliza a chave do cache publico futuro. O cache e invalidado apos sincronizacoes/resolucoes bem-sucedidas; falhas preservam o cache anterior.
 
 ### Painel administrativo
@@ -195,6 +197,8 @@ A request publica nao chama API-Football, TheSportsDB nem OpenAI. Ela consulta d
 A API publica versionada fica em `/api/v1/fixtures` e `/api/v1/fixtures/{id}`. Ela reutiliza `PublishedFixtureSchedule`, aplica os mesmos estados de aprovacao/publicacao da pagina Blade, oferece filtros por data, competicao e time, e limita o tamanho da pagina. `FixtureResource` controla o contrato JSON, retorna datas em ISO 8601 UTC com o timezone de apresentacao e omite `raw_payload`.
 
 Android e iOS poderao consumir essa API por um cliente nativo ou hibrido. A camada mobile nao deve duplicar regras de publicacao, confiabilidade ou integracao com provedores.
+
+URLs de fontes externas sao normalizadas por `App\Support\ExternalUrl` antes de serem persistidas ou retornadas pela API. Apenas esquemas `http` e `https` com host valido sao aceitos.
 
 ## Riscos
 

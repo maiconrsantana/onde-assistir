@@ -8,6 +8,7 @@ use App\Services\Operations\FootballAutomationStatus;
 use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ResolveBroadcastsCommand extends Command
 {
@@ -22,7 +23,13 @@ class ResolveBroadcastsCommand extends Command
 
     public function handle(BroadcastResolver $resolver, FootballAutomationStatus $status, PublicScheduleCache $cache): int
     {
+        $startedAt = microtime(true);
         [$from, $to] = $this->dateRange();
+
+        Log::info('football.resolve_broadcasts.started', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+        ]);
         $limit = max(1, (int) $this->option('limit'));
         $resolutionStatus = (string) $this->option('status');
 
@@ -48,15 +55,31 @@ class ResolveBroadcastsCommand extends Command
         }
 
         if ($result->errors > 0) {
+            Log::warning('football.resolve_broadcasts.completed_with_errors', [
+                'duration_ms' => $this->durationMs($startedAt),
+                'totals' => $result->totals(),
+            ]);
             $status->recordFailure('football:resolve-broadcasts', 'Resolucao TheSportsDB concluiu com erros.', $result->totals());
 
             return self::FAILURE;
         }
 
         $cache->invalidate();
-        $status->recordSuccess('football:resolve-broadcasts', $result->totals());
+        $payload = array_merge($result->totals(), [
+            'duration_ms' => $this->durationMs($startedAt),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'fixtures_selected' => $fixtures->count(),
+        ]);
+        Log::info('football.resolve_broadcasts.completed', ['totals' => $payload]);
+        $status->recordSuccess('football:resolve-broadcasts', $payload);
 
         return self::SUCCESS;
+    }
+
+    private function durationMs(float $startedAt): int
+    {
+        return (int) round((microtime(true) - $startedAt) * 1000);
     }
 
     /**

@@ -78,6 +78,8 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - Transmissoes publicas sao filtradas por Brasil e precisam estar sem `needs_review`, aprovadas e publicadas; o painel permite publicar ou retirar cada transmissao individualmente.
 - Jogos publicados sem transmissao publicavel exibem "Transmissao ainda nao divulgada".
 - API publica versionada criada em `/api/v1/fixtures` para futuros clientes mobile, com filtros, paginação, rate limit e contrato JSON sem `raw_payload`.
+- Comandos automaticos registram inicio, fim, duracao, totais e falhas no log; o dashboard do Filament sinaliza automacoes desatualizadas ou com erro.
+- URLs de fontes passam por validacao central para aceitar somente `http` e `https`; o fluxo integrado provider -> sincronizador -> banco -> pagina/API esta coberto por teste.
 
 ## Pendencias Reais
 

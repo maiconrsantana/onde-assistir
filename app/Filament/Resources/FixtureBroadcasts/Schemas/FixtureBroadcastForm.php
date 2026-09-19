@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FixtureBroadcasts\Schemas;
 
 use App\Models\FixtureBroadcast;
+use App\Rules\ExternalHttpUrl;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -65,7 +66,7 @@ class FixtureBroadcastForm
                     ->default('BR'),
                 TextInput::make('source_url')
                     ->label('Fonte')
-                    ->url()
+                    ->rules([new ExternalHttpUrl])
                     ->maxLength(255),
                 TextInput::make('confidence')
                     ->label('Confiança')

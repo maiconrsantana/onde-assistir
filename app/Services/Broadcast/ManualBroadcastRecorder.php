@@ -4,6 +4,7 @@ namespace App\Services\Broadcast;
 
 use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
+use App\Support\ExternalUrl;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -12,6 +13,7 @@ class ManualBroadcastRecorder
     public function record(FixtureBroadcast $broadcast): void
     {
         $broadcast->loadMissing(['broadcaster', 'fixture']);
+        $sourceUrl = ExternalUrl::normalize($broadcast->source_url);
 
         $source = BroadcastSource::create([
             'football_fixture_id' => $broadcast->football_fixture_id,
@@ -22,11 +24,11 @@ class ManualBroadcastRecorder
                 'type' => $broadcast->broadcaster?->type,
                 'access_type' => $broadcast->access_type,
                 'country_code' => $broadcast->country_code,
-                'source_url' => $broadcast->source_url,
+                'source_url' => $sourceUrl,
             ]],
-            'evidence' => $broadcast->source_url ? [[
-                'url' => $broadcast->source_url,
-                'publisher' => parse_url($broadcast->source_url, PHP_URL_HOST),
+            'evidence' => $sourceUrl ? [[
+                'url' => $sourceUrl,
+                'publisher' => parse_url($sourceUrl, PHP_URL_HOST),
                 'published_at' => null,
                 'summary' => 'Fonte informada manualmente no painel administrativo.',
             ]] : [],

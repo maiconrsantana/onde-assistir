@@ -45,7 +45,16 @@ class PublicApiTest extends TestCase
         FixtureBroadcast::factory()->create([
             'football_fixture_id' => $fixture->id,
             'broadcaster_id' => $broadcaster->id,
+            'access_type' => FixtureBroadcast::ACCESS_FREE,
             'source_url' => 'https://example.com/onde-assistir',
+            'needs_review' => false,
+            'review_status' => FixtureBroadcast::REVIEW_APPROVED,
+            'publication_status' => FixtureBroadcast::PUBLICATION_PUBLISHED,
+        ]);
+        FixtureBroadcast::factory()->create([
+            'football_fixture_id' => $fixture->id,
+            'source_url' => 'javascript:alert(1)',
+            'access_type' => FixtureBroadcast::ACCESS_UNKNOWN,
             'needs_review' => false,
             'review_status' => FixtureBroadcast::REVIEW_APPROVED,
             'publication_status' => FixtureBroadcast::PUBLICATION_PUBLISHED,
@@ -65,6 +74,7 @@ class PublicApiTest extends TestCase
             ->assertJsonPath('data.0.timezone', 'America/Sao_Paulo')
             ->assertJsonPath('data.0.broadcasts.0.broadcaster.name', 'Canal API')
             ->assertJsonPath('data.0.broadcasts.0.source_url', 'https://example.com/onde-assistir')
+            ->assertJsonPath('data.0.broadcasts.1.source_url', null)
             ->assertJsonPath('meta.per_page', 1)
             ->assertJsonCount(1, 'data');
     }

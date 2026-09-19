@@ -2,6 +2,7 @@
 
 namespace App\Services\Operations;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class FootballAutomationStatus
@@ -72,6 +73,21 @@ class FootballAutomationStatus
             'message' => null,
             'payload' => [],
         ]);
+    }
+
+    public function isFresh(string $command, int $maxAgeHours = 26): bool
+    {
+        $status = $this->statusFor($command);
+        $lastSuccessAt = $status['last_success_at'] ?? null;
+
+        if (($status['last_status'] ?? null) !== 'success' || ! is_string($lastSuccessAt)) {
+            return false;
+        }
+
+        $lastSuccess = Carbon::parse($lastSuccessAt);
+
+        return ! $lastSuccess->isFuture()
+            && $lastSuccess->diffInMinutes(now()->utc(), true) <= ($maxAgeHours * 60);
     }
 
     private function key(string $command): string

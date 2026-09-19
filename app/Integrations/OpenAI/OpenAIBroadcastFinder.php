@@ -10,6 +10,7 @@ use App\Models\Broadcaster;
 use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
+use App\Support\ExternalUrl;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -317,7 +318,9 @@ class OpenAIBroadcastFinder implements BroadcastFinder
             ->map(function (array $row): ?array {
                 $url = $row['url'] ?? null;
 
-                if (! is_string($url) || ! Str::startsWith($url, ['http://', 'https://'])) {
+                $url = ExternalUrl::normalize(is_string($url) ? $url : null);
+
+                if ($url === null) {
                     return null;
                 }
 
@@ -360,7 +363,9 @@ class OpenAIBroadcastFinder implements BroadcastFinder
                 foreach ((array) data_get($item, 'action.sources', []) as $source) {
                     $url = is_array($source) ? ($source['url'] ?? null) : null;
 
-                    if (is_string($url) && Str::startsWith($url, ['http://', 'https://'])) {
+                    $url = ExternalUrl::normalize(is_string($url) ? $url : null);
+
+                    if ($url !== null) {
                         $citations[] = [
                             'url' => $url,
                             'publisher' => parse_url($url, PHP_URL_HOST) ?: 'Fonte web',
@@ -375,7 +380,9 @@ class OpenAIBroadcastFinder implements BroadcastFinder
                 foreach ((array) data_get($content, 'annotations', []) as $annotation) {
                     $url = is_array($annotation) ? ($annotation['url'] ?? null) : null;
 
-                    if (is_string($url) && Str::startsWith($url, ['http://', 'https://'])) {
+                    $url = ExternalUrl::normalize(is_string($url) ? $url : null);
+
+                    if ($url !== null) {
                         $citations[] = [
                             'url' => $url,
                             'publisher' => is_string($annotation['title'] ?? null) ? $annotation['title'] : parse_url($url, PHP_URL_HOST),

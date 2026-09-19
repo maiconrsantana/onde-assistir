@@ -10,6 +10,7 @@ use App\Models\Competition;
 use App\Models\FootballFixture;
 use App\Models\Team;
 use App\Services\Football\FixtureSynchronizer;
+use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -183,6 +184,36 @@ class FixtureSynchronizerTest extends TestCase
             'provider' => 'api_football',
             'external_id' => '1200001',
         ]);
+    }
+
+    public function test_provider_sync_publishes_through_web_and_api_boundaries(): void
+    {
+        $this->app->bind(FootballDataProvider::class, fn () => new class($this->fixtureData(startsAt: CarbonImmutable::parse('2026-09-20T22:30:00+00:00'))) implements FootballDataProvider
+        {
+            public function __construct(private readonly FootballFixtureData $fixture) {}
+
+            public function fixturesBetween(CarbonInterface $from, CarbonInterface $to): array
+            {
+                return [$this->fixture];
+            }
+        });
+
+        $this->artisan('football:sync', [
+            '--from' => '2026-09-19',
+            '--to' => '2026-09-20',
+        ])->assertExitCode(0);
+
+        $fixture = FootballFixture::query()->firstOrFail();
+        $fixture->update([
+            'review_status' => FootballFixture::REVIEW_APPROVED,
+            'publication_status' => FootballFixture::PUBLICATION_PUBLISHED,
+        ]);
+        app(PublicScheduleCache::class)->invalidate();
+
+        $this->get('/')->assertOk()->assertSeeText('Corinthians')->assertSeeText('Palmeiras');
+        $this->getJson('/api/v1/fixtures')
+            ->assertOk()
+            ->assertJsonPath('data.0.external_id', '1200001');
     }
 
     private function fixtureData(

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
+use App\Support\ExternalUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -47,20 +48,9 @@ class FixtureResource extends JsonResource
                         'type' => $broadcast->broadcaster?->type,
                     ],
                     'access_type' => $broadcast->access_type,
-                    'source_url' => $this->safeSourceUrl($broadcast->source_url),
+                    'source_url' => ExternalUrl::normalize($broadcast->source_url),
                 ]
             )->values(),
         ];
-    }
-
-    private function safeSourceUrl(?string $url): ?string
-    {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            return null;
-        }
-
-        return in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true)
-            ? $url
-            : null;
     }
 }

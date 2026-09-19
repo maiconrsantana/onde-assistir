@@ -10,6 +10,7 @@ use App\Services\Operations\FootballAutomationStatus;
 use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ResolveOpenAiBroadcastsCommand extends Command
 {
@@ -28,7 +29,13 @@ class ResolveOpenAiBroadcastsCommand extends Command
         FootballAutomationStatus $status,
         PublicScheduleCache $cache,
     ): int {
+        $startedAt = microtime(true);
         [$from, $to] = $this->dateRange();
+
+        Log::info('football.resolve_openai.started', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+        ]);
         $limit = max(1, (int) $this->option('limit'));
         $ttlHours = max(1, (int) $this->option('ttl-hours'));
         $cutoff = now()->utc()->subHours($ttlHours);
@@ -68,15 +75,31 @@ class ResolveOpenAiBroadcastsCommand extends Command
         }
 
         if ($result->errors > 0) {
+            Log::warning('football.resolve_openai.completed_with_errors', [
+                'duration_ms' => $this->durationMs($startedAt),
+                'totals' => $result->totals(),
+            ]);
             $status->recordFailure('football:resolve-openai-broadcasts', 'Resolucao OpenAI concluiu com erros.', $result->totals());
 
             return self::FAILURE;
         }
 
         $cache->invalidate();
-        $status->recordSuccess('football:resolve-openai-broadcasts', $result->totals());
+        $payload = array_merge($result->totals(), [
+            'duration_ms' => $this->durationMs($startedAt),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'fixtures_selected' => $fixtures->count(),
+        ]);
+        Log::info('football.resolve_openai.completed', ['totals' => $payload]);
+        $status->recordSuccess('football:resolve-openai-broadcasts', $payload);
 
         return self::SUCCESS;
+    }
+
+    private function durationMs(float $startedAt): int
+    {
+        return (int) round((microtime(true) - $startedAt) * 1000);
     }
 
     /**

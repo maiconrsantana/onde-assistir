@@ -11,6 +11,7 @@ use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FixtureProviderMapping;
 use App\Models\FootballFixture;
+use App\Support\ExternalUrl;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -138,7 +139,7 @@ class BroadcastResolver
             'broadcast_source_id' => $source->id,
             'access_type' => $channel->accessType,
             'source_type' => $searchResult->provider,
-            'source_url' => $channel->sourceUrl ?? $this->firstEvidenceUrl($searchResult),
+            'source_url' => ExternalUrl::normalize($channel->sourceUrl) ?? $this->firstEvidenceUrl($searchResult),
             'confidence' => $searchResult->calculatedConfidence,
             'verified_at' => now()->utc(),
             'needs_review' => true,
@@ -238,6 +239,6 @@ class BroadcastResolver
     {
         $url = data_get($searchResult->evidence, '0.url');
 
-        return is_string($url) && Str::startsWith($url, ['http://', 'https://']) ? $url : null;
+        return ExternalUrl::normalize(is_string($url) ? $url : null);
     }
 }
