@@ -120,6 +120,16 @@ class BroadcastResolver
             'type' => $channel->type,
         ]);
 
+        $existing = FixtureBroadcast::query()
+            ->where('football_fixture_id', $fixture->id)
+            ->where('broadcaster_id', $broadcaster->id)
+            ->where('country_code', $channel->countryCode)
+            ->first();
+
+        if ($existing?->source_type === FixtureBroadcast::SOURCE_MANUAL) {
+            return $existing;
+        }
+
         return FixtureBroadcast::updateOrCreate([
             'football_fixture_id' => $fixture->id,
             'broadcaster_id' => $broadcaster->id,

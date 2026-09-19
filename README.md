@@ -53,6 +53,18 @@ No servidor, configure um unico cron para o Laravel:
 
 Os eventos usam `withoutOverlapping`. Como o cache padrao do projeto usa `database`, rode as migrations de cache/jobs antes de depender do Scheduler em ambiente real.
 
+## Admin
+
+O painel administrativo fica em `/admin` e usa autenticação Laravel/Filament. Não existe credencial padrão no código.
+
+Para habilitar acesso, crie um usuário e marque `is_admin=true` no banco:
+
+```bash
+php artisan make:filament-user
+```
+
+Depois ajuste o campo `is_admin` desse usuário para `1` no MySQL.
+
 ## Validacao
 
 ```bash

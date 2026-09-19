@@ -21,6 +21,7 @@ Onde Passa o Jogo e uma aplicacao Laravel 12 para listar partidas, horarios e tr
 - Atualizar transmissoes com fallback: `php artisan football:refresh-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`
 - Diagnosticar automacoes: `php artisan football:automation-status`
 - Ver Scheduler: `CACHE_STORE=array php artisan schedule:list`
+- Painel admin: `/admin` com usuario autenticado e `is_admin=true`
 
 ## Regras do projeto
 

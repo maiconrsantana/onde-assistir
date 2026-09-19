@@ -164,6 +164,18 @@ Os eventos usam `withoutOverlapping(120)` para evitar execucoes concorrentes. `o
 
 `App\Services\Operations\PublicScheduleCache` centraliza a chave do cache publico futuro. O cache e invalidado apos sincronizacoes/resolucoes bem-sucedidas; falhas preservam o cache anterior.
 
+### Painel administrativo
+
+O painel usa Filament 5 em `/admin`. O acesso exige usuario autenticado com `users.is_admin=true`; o projeto nao cria credenciais padrao.
+
+Recursos atuais:
+
+- partidas: revisao de status, filtros por competicao/time/status e acao de aprovacao;
+- emissoras: CRUD de nome, slug e tipo;
+- transmissoes: criacao/correcao manual, filtros por origem/revisao/fonte e acao de aprovacao.
+
+Alteracoes manuais usam `source_type=manual`, geram historico em `broadcast_sources` com `provider=manual` e preservam o usuario responsavel no payload sanitizado. O resolvedor automatico nao sobrescreve transmissao manual existente para a mesma partida, emissora e pais.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.

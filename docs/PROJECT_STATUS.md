@@ -4,7 +4,7 @@ Atualizado em: 2026-09-18
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 8 — Painel administrativo**.
+Proxima etapa recomendada: **Etapa 5.1 — Interface publica**.
 
 ## Etapas
 
@@ -17,10 +17,10 @@ Proxima etapa recomendada: **Etapa 8 — Painel administrativo**.
 | 3 — Provedor API-Football | Concluida | Contrato, DTOs, provider HTTP, comando de diagnostico e testes fake criados. |
 | 4 — Sincronizacao idempotente | Concluida | `football:sync` persiste competicoes, times e partidas sem duplicar registros. |
 | 5 — Resolver transmissoes com TheSportsDB | Concluida | `football:resolve-broadcasts` pesquisa transmissoes na TheSportsDB e grava fontes/transmissoes em rascunho. |
-| 5.1 — Interface publica | Pendente | Aguardando dados publicados. |
+| 5.1 — Interface publica | Pendente | Proximo passo para exibir somente dados publicados. |
 | 6 — Scheduler, filas e cache | Concluida | Scheduler registrado, status operacional em cache e invalidação do cache publico em sucesso. |
 | 7 — OpenAI para transmissoes ausentes | Concluida | `football:resolve-openai-broadcasts` usa Responses API com web search e schema estruturado. |
-| 8 — Painel administrativo | Pendente | Proximo passo para revisar, aprovar e publicar transmissoes. |
+| 8 — Painel administrativo | Concluida | Filament instalado em `/admin`, com recursos para partidas, emissoras e transmissoes. |
 | 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
 | 10 — SEO, docs e deploy | Pendente | Aguardando MVP funcional. |
 | 11 — Libertadores | Futuro | Somente apos Brasileirão estabilizado. |
@@ -40,6 +40,7 @@ Proxima etapa recomendada: **Etapa 8 — Painel administrativo**.
 - Etapa 5: `php artisan football:resolve-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD`.
 - Etapa 6: `CACHE_STORE=array php artisan schedule:list`.
 - Etapa 7: `php artisan football:resolve-openai-broadcasts --from=YYYY-MM-DD --to=YYYY-MM-DD --limit=10`.
+- Etapa 8: `/admin`.
 
 ## Decisoes Permanentes
 
@@ -66,9 +67,12 @@ Proxima etapa recomendada: **Etapa 8 — Painel administrativo**.
 - Scheduler roda `football:sync --days=14` as 06:00 e `football:refresh-broadcasts --days=7` as 16:00 em `America/Sao_Paulo`.
 - `football:automation-status` le status operacional leve salvo em cache.
 - Cache publico atual e invalidado somente quando sincronizacao/resolucao termina com sucesso.
+- Filament 5 fica em `/admin`; usuarios precisam de `is_admin=true` para acessar.
+- Alteracoes manuais de transmissao gravam `broadcast_sources.provider=manual`.
+- Transmissoes manuais nao sao sobrescritas por resolucoes automaticas futuras.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
-- Implementar painel administrativo para revisar, aprovar e publicar transmissoes.
-- Ainda nao ha painel administrativo nem interface publica publicada.
+- Implementar interface publica com apenas dados publicados.
+- Ainda nao ha interface publica publicada.
