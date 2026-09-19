@@ -190,6 +190,12 @@ Transmissoes exibidas ao visitante sao carregadas de `fixture_broadcasts` apenas
 
 A request publica nao chama API-Football, TheSportsDB nem OpenAI. Ela consulta dados locais e usa `App\Services\Operations\PublicScheduleCache`, invalidado pelos fluxos de sincronizacao/resolucao quando concluem com sucesso.
 
+### API para clientes mobile
+
+A API publica versionada fica em `/api/v1/fixtures` e `/api/v1/fixtures/{id}`. Ela reutiliza `PublishedFixtureSchedule`, aplica os mesmos estados de aprovacao/publicacao da pagina Blade, oferece filtros por data, competicao e time, e limita o tamanho da pagina. `FixtureResource` controla o contrato JSON, retorna datas em ISO 8601 UTC com o timezone de apresentacao e omite `raw_payload`.
+
+Android e iOS poderao consumir essa API por um cliente nativo ou hibrido. A camada mobile nao deve duplicar regras de publicacao, confiabilidade ou integracao com provedores.
+
 ## Riscos
 
 - Credenciais de API-Football, TheSportsDB e OpenAI dependem do `.env` local.

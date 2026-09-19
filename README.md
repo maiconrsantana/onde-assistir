@@ -73,6 +73,21 @@ A rota `/` exibe a agenda publica. Ela le apenas dados locais publicados e aprov
 
 Jogos sem transmissao publicavel exibem `Transmissao ainda nao divulgada`.
 
+## API para aplicativos
+
+A agenda publicada tambem esta disponivel em `/api/v1/fixtures`, para futuros clientes Android e iOS. A API reutiliza as mesmas regras da pagina web e nunca exibe partidas ou transmissoes que nao estejam aprovadas e publicadas.
+
+Exemplos:
+
+```text
+GET /api/v1/fixtures
+GET /api/v1/fixtures?date=2026-09-20&per_page=20
+GET /api/v1/fixtures?competition_id=1&team_id=2
+GET /api/v1/fixtures/{id}
+```
+
+As datas sao retornadas em ISO 8601 UTC e o campo `timezone` informa `America/Sao_Paulo` para a apresentacao no aplicativo. A API e publica, possui limite de requisicoes e nao expoe `raw_payload`.
+
 ## Validacao
 
 ```bash

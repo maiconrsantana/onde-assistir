@@ -4,7 +4,7 @@ Atualizado em: 2026-09-19
 
 ## Etapa Atual
 
-Proxima etapa recomendada: **Etapa 9 — Endurecimento do MVP**.
+Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 
 ## Etapas
 
@@ -21,7 +21,7 @@ Proxima etapa recomendada: **Etapa 9 — Endurecimento do MVP**.
 | 6 — Scheduler, filas e cache | Concluida | Scheduler registrado, status operacional em cache e invalidação do cache publico em sucesso. |
 | 7 — OpenAI para transmissoes ausentes | Concluida | `football:resolve-openai-broadcasts` usa Responses API com web search e schema estruturado. |
 | 8 — Painel administrativo | Concluida | Filament instalado em `/admin`, com recursos para partidas, emissoras e transmissoes. |
-| 9 — Endurecimento do MVP | Pendente | Aguardando MVP funcional. |
+| 9 — Endurecimento do MVP | Em andamento | Testes de endurecimento e API publica versionada iniciados, preparando futuros clientes Android/iOS. |
 | 10 — SEO, docs e deploy | Pendente | Aguardando MVP funcional. |
 | 11 — Libertadores | Futuro | Somente apos Brasileirão estabilizado. |
 
@@ -77,8 +77,10 @@ Proxima etapa recomendada: **Etapa 9 — Endurecimento do MVP**.
 - A agenda publica lista apenas partidas com `publication_status=published` e `review_status=approved`.
 - Transmissoes publicas sao filtradas por Brasil e precisam estar sem `needs_review`, aprovadas e publicadas; o painel permite publicar ou retirar cada transmissao individualmente.
 - Jogos publicados sem transmissao publicavel exibem "Transmissao ainda nao divulgada".
+- API publica versionada criada em `/api/v1/fixtures` para futuros clientes mobile, com filtros, paginação, rate limit e contrato JSON sem `raw_payload`.
 
 ## Pendencias Reais
 
 - Manter `.env` local com credenciais reais fora do Git.
 - Endurecer o MVP com filtros, SEO, estados de erro/vazio e revisao visual em dados reais.
+- Completar a Etapa 9 com observabilidade, revisão de segurança, health check operacional e validação final do fluxo provider -> sincronizador -> banco -> API/página.
