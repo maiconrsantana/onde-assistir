@@ -166,6 +166,8 @@ Os eventos usam `withoutOverlapping(120)` para evitar execucoes concorrentes. `o
 
 As execucoes tambem registram eventos estruturados de inicio, conclusao e erro no log Laravel, com intervalo processado, duracao em milissegundos e totais. O dashboard do Filament exibe a saude das automacoes; uma rotina e considerada atualizada quando concluiu com sucesso nas ultimas 26 horas.
 
+O comando `football:prune-raw-data` usa retencao padrao de 90 dias. Ele funciona em modo de simulacao por padrao e exige `--execute` para remover `raw_payload` de partidas, mapeamentos e `raw_response` de fontes antigas. Evidencias de transmissao e estados normalizados nao sao removidos.
+
 `App\Services\Operations\PublicScheduleCache` centraliza a chave do cache publico futuro. O cache e invalidado apos sincronizacoes/resolucoes bem-sucedidas; falhas preservam o cache anterior.
 
 ### Painel administrativo

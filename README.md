@@ -90,6 +90,8 @@ As datas sao retornadas em ISO 8601 UTC e o campo `timezone` informa `America/Sa
 
 O dashboard administrativo mostra o status das automacoes. Para consultar o diagnostico em texto, use `php artisan football:automation-status`; os eventos detalhados ficam no log Laravel.
 
+Payloads crus antigos podem ser removidos com seguranca apos uma simulacao: `php artisan football:prune-raw-data --days=90` lista os registros, e `php artisan football:prune-raw-data --days=90 --execute` executa a limpeza. Evidencias, dados normalizados e historico de revisao sao preservados.
+
 ## Validacao
 
 ```bash

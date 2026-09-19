@@ -80,6 +80,7 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - API publica versionada criada em `/api/v1/fixtures` para futuros clientes mobile, com filtros, paginação, rate limit e contrato JSON sem `raw_payload`.
 - Comandos automaticos registram inicio, fim, duracao, totais e falhas no log; o dashboard do Filament sinaliza automacoes desatualizadas ou com erro.
 - URLs de fontes passam por validacao central para aceitar somente `http` e `https`; o fluxo integrado provider -> sincronizador -> banco -> pagina/API esta coberto por teste.
+- Retencao de payloads implementada com `football:prune-raw-data`, simulacao padrao e execucao explicita; logs diarios suportam retencao configuravel por `LOG_DAILY_DAYS`.
 
 ## Pendencias Reais
 
