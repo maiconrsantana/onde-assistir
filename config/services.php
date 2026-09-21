@@ -61,9 +61,24 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-5-mini'),
         'broadcast_search_enabled' => (bool) env('OPENAI_BROADCAST_SEARCH_ENABLED', true),
         'web_search_tool' => env('OPENAI_WEB_SEARCH_TOOL', 'web_search_preview'),
-        'timeout' => (int) env('OPENAI_TIMEOUT', 30),
-        'retry_times' => (int) env('OPENAI_RETRY_TIMES', 1),
+        'web_search_context_size' => env('OPENAI_WEB_SEARCH_CONTEXT_SIZE', 'low'),
+        'timeout' => (int) env('OPENAI_TIMEOUT', 120),
+        'retry_times' => (int) env('OPENAI_RETRY_TIMES', 0),
         'retry_sleep' => (int) env('OPENAI_RETRY_SLEEP', 1000),
+    ],
+
+    'gemini' => [
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.6-flash'),
+        'broadcast_search_enabled' => (bool) env('GEMINI_BROADCAST_SEARCH_ENABLED', true),
+        'timeout' => (int) env('GEMINI_TIMEOUT', 30),
+        'retry_times' => (int) env('GEMINI_RETRY_TIMES', 1),
+        'retry_sleep' => (int) env('GEMINI_RETRY_SLEEP', 1000),
+    ],
+
+    'ai' => [
+        'broadcast_provider' => env('AI_BROADCAST_PROVIDER', 'gemini'),
     ],
 
 ];

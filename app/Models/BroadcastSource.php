@@ -17,6 +17,8 @@ class BroadcastSource extends Model
 
     public const PROVIDER_OPENAI = 'openai';
 
+    public const PROVIDER_GEMINI = 'gemini';
+
     public const PROVIDER_MANUAL = 'manual';
 
     public const RESULT_FOUND = 'found';

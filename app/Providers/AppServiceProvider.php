@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Contracts\AiBroadcastFinder;
 use App\Contracts\BroadcastFinder;
 use App\Contracts\FootballDataProvider;
 use App\Integrations\FootballData\FootballDataProvider as FootballDataHttpProvider;
+use App\Integrations\Gemini\GeminiBroadcastFinder;
 use App\Integrations\OpenAI\OpenAIBroadcastFinder;
 use App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder;
 use Illuminate\Support\ServiceProvider;
@@ -42,10 +44,25 @@ class AppServiceProvider extends ServiceProvider
             model: config('services.openai.model'),
             enabled: config('services.openai.broadcast_search_enabled'),
             webSearchTool: config('services.openai.web_search_tool'),
+            webSearchContextSize: config('services.openai.web_search_context_size'),
             timeout: config('services.openai.timeout'),
             retryTimes: config('services.openai.retry_times'),
             retrySleep: config('services.openai.retry_sleep'),
         ));
+
+        $this->app->bind(GeminiBroadcastFinder::class, fn () => new GeminiBroadcastFinder(
+            baseUrl: config('services.gemini.base_url'), key: config('services.gemini.key'), model: config('services.gemini.model'),
+            enabled: config('services.gemini.broadcast_search_enabled'), timeout: config('services.gemini.timeout'),
+            retryTimes: config('services.gemini.retry_times'), retrySleep: config('services.gemini.retry_sleep'),
+        ));
+
+        $this->app->bind(AiBroadcastFinder::class, function ($app): AiBroadcastFinder {
+            return match (config('services.ai.broadcast_provider')) {
+                'openai' => $app->make(OpenAIBroadcastFinder::class),
+                'gemini' => $app->make(GeminiBroadcastFinder::class),
+                default => throw new \InvalidArgumentException('Unsupported AI broadcast provider: '.config('services.ai.broadcast_provider')),
+            };
+        });
     }
 
     /**

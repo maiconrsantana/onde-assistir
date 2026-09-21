@@ -63,8 +63,9 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - TheSportsDB fica atras de `BroadcastFinder`.
 - `BroadcastResolver` persiste `broadcast_sources`, `broadcasters`, `fixture_broadcasts` e `fixture_provider_mappings`.
 - Transmissoes encontradas automaticamente continuam com `review_status=pending` e `publication_status=draft`.
-- OpenAI e usada apenas por comando de fallback para jogos nao resolvidos pela TheSportsDB.
-- `OpenAIBroadcastFinder` usa Responses API, web search e JSON Schema estruturado.
+- Gemini e OpenAI ficam disponiveis como fallback configuravel para jogos nao resolvidos pela TheSportsDB.
+- `GeminiBroadcastFinder` e `OpenAIBroadcastFinder` implementam `AiBroadcastFinder` e normalizam respostas no DTO `BroadcastSearchResult`.
+- `AI_BROADCAST_PROVIDER=gemini` ativa Gemini; `AI_BROADCAST_PROVIDER=openai` ativa OpenAI.
 - Scheduler roda `football:sync --days=14` as 06:00 e `football:refresh-broadcasts --days=7` as 16:00 em `America/Sao_Paulo`.
 - `football:automation-status` le status operacional leve salvo em cache.
 - Cache publico atual e invalidado somente quando sincronizacao/resolucao termina com sucesso.
@@ -82,6 +83,7 @@ Etapa atual: **Etapa 9 — Endurecimento do MVP**.
 - URLs de fontes passam por validacao central para aceitar somente `http` e `https`; o fluxo integrado provider -> sincronizador -> banco -> pagina/API esta coberto por teste.
 - Retencao de payloads implementada com `football:prune-raw-data`, simulacao padrao e execucao explicita; logs diarios suportam retencao configuravel por `LOG_DAILY_DAYS`.
 - O health check operacional usa a rota nativa `/up` do Laravel e esta coberto por teste automatizado.
+- Gemini integrado via `generateContent` com Google Search grounding, JSON estruturado e evidencias normalizadas.
 
 ## Pendencias Reais
 

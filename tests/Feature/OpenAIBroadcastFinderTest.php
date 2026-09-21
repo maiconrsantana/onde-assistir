@@ -56,6 +56,7 @@ class OpenAIBroadcastFinderTest extends TestCase
         Http::assertSent(fn ($request): bool => $request->hasHeader('Authorization', 'Bearer test-key')
             && $request['model'] === 'gpt-test'
             && $request['tools'][0]['type'] === 'web_search_preview'
+            && $request['tools'][0]['search_context_size'] === 'low'
             && $request['text']['format']['type'] === 'json_schema');
     }
 

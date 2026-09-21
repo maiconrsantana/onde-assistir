@@ -2,7 +2,7 @@
 
 namespace App\Integrations\OpenAI;
 
-use App\Contracts\BroadcastFinder;
+use App\Contracts\AiBroadcastFinder;
 use App\Data\Broadcast\BroadcastChannelData;
 use App\Data\Broadcast\BroadcastSearchResult;
 use App\Exceptions\BroadcastFinderException;
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 use JsonException;
 use Throwable;
 
-class OpenAIBroadcastFinder implements BroadcastFinder
+class OpenAIBroadcastFinder implements AiBroadcastFinder
 {
     private const PROVIDER = BroadcastSource::PROVIDER_OPENAI;
 
@@ -28,10 +28,16 @@ class OpenAIBroadcastFinder implements BroadcastFinder
         private readonly ?string $model,
         private readonly bool $enabled = true,
         private readonly string $webSearchTool = 'web_search_preview',
+        private readonly string $webSearchContextSize = 'low',
         private readonly int $timeout = 30,
         private readonly int $retryTimes = 1,
         private readonly int $retrySleep = 1000,
     ) {}
+
+    public function provider(): string
+    {
+        return BroadcastSource::PROVIDER_OPENAI;
+    }
 
     public function findForFixture(FootballFixture $fixture): BroadcastSearchResult
     {
@@ -84,7 +90,7 @@ class OpenAIBroadcastFinder implements BroadcastFinder
                     'model' => $this->model,
                     'tools' => [[
                         'type' => $this->webSearchTool,
-                        'search_context_size' => 'medium',
+                        'search_context_size' => $this->webSearchContextSize,
                         'user_location' => [
                             'type' => 'approximate',
                             'country' => 'BR',

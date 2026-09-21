@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Integrations\OpenAI\OpenAIBroadcastFinder;
-use App\Models\BroadcastSource;
+use App\Contracts\AiBroadcastFinder;
 use App\Models\FootballFixture;
 use App\Services\Broadcast\BroadcastResolver;
 use App\Services\Operations\FootballAutomationStatus;
@@ -22,10 +21,10 @@ class ResolveOpenAiBroadcastsCommand extends Command
         {--ttl-hours=24 : Hours to wait before repeating an OpenAI search}
         {--force : Ignore the OpenAI search TTL}';
 
-    protected $description = 'Resolve missing or uncertain fixture broadcasts using OpenAI web search fallback.';
+    protected $description = 'Resolve missing or uncertain fixture broadcasts using the configured AI web search fallback.';
 
     public function handle(
-        OpenAIBroadcastFinder $finder,
+        AiBroadcastFinder $finder,
         FootballAutomationStatus $status,
         PublicScheduleCache $cache,
     ): int {
@@ -39,6 +38,7 @@ class ResolveOpenAiBroadcastsCommand extends Command
         $limit = max(1, (int) $this->option('limit'));
         $ttlHours = max(1, (int) $this->option('ttl-hours'));
         $cutoff = now()->utc()->subHours($ttlHours);
+        $provider = $finder->provider();
 
         $fixtures = FootballFixture::query()
             ->with(['competition', 'homeTeam', 'awayTeam', 'broadcastSources'])
@@ -53,16 +53,16 @@ class ResolveOpenAiBroadcastsCommand extends Command
             ->when(! $this->option('force'), fn ($query) => $query->whereDoesntHave(
                 'broadcastSources',
                 fn ($sourceQuery) => $sourceQuery
-                    ->where('provider', BroadcastSource::PROVIDER_OPENAI)
+                    ->where('provider', $provider)
                     ->where('queried_at', '>=', $cutoff),
             ))
             ->orderBy('starts_at')
             ->limit($limit)
             ->get();
 
-        $this->components->info("Resolvendo transmissoes com OpenAI para {$fixtures->count()} partida(s).");
+        $this->components->info("Resolvendo transmissoes com {$finder->provider()} para {$fixtures->count()} partida(s).");
 
-        $resolver = new BroadcastResolver($finder, BroadcastSource::PROVIDER_OPENAI);
+        $resolver = new BroadcastResolver($finder, $finder->provider());
         $result = $resolver->resolve($fixtures);
 
         $this->table(['Metrica', 'Total'], collect($result->totals())
@@ -79,7 +79,7 @@ class ResolveOpenAiBroadcastsCommand extends Command
                 'duration_ms' => $this->durationMs($startedAt),
                 'totals' => $result->totals(),
             ]);
-            $status->recordFailure('football:resolve-openai-broadcasts', 'Resolucao OpenAI concluiu com erros.', $result->totals());
+            $status->recordFailure('football:resolve-openai-broadcasts', "Resolucao {$provider} concluiu com erros.", $result->totals());
 
             return self::FAILURE;
         }
@@ -91,7 +91,7 @@ class ResolveOpenAiBroadcastsCommand extends Command
             'to' => $to->toDateString(),
             'fixtures_selected' => $fixtures->count(),
         ]);
-        Log::info('football.resolve_openai.completed', ['totals' => $payload]);
+        Log::info('football.resolve_ai.completed', ['provider' => $provider, 'totals' => $payload]);
         $status->recordSuccess('football:resolve-openai-broadcasts', $payload);
 
         return self::SUCCESS;

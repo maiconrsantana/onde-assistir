@@ -16,7 +16,7 @@ O bootstrap do Laravel ja esta funcional via Apache em `https://maicon.receiv.it
 - Estrategia de datas futuras: persistir instantes de partidas em UTC e converter para `America/Sao_Paulo` na apresentacao.
 - Provedor esportivo: football-data.org atras de uma interface.
 - Provedor de transmissao planejado: TheSportsDB antes de qualquer fallback por IA.
-- IA planejada: OpenAI Responses API apenas como fallback para transmissao ausente, conflitante ou vencida.
+- IA planejada: Gemini ou OpenAI, selecionada por configuracao, apenas como fallback para transmissao ausente, conflitante ou vencida.
 - Publicacao planejada: modo manual por padrao; pagina publica exibe somente registros publicados.
 
 ## Fluxo Planejado
@@ -145,15 +145,17 @@ O resolvedor persiste:
 
 Mesmo quando encontra transmissao, o modo atual permanece manual: a partida fica `resolution_status=resolved`, `review_status=pending` e `publication_status=draft`.
 
-### OpenAI
+### Provedores de IA
 
-O fallback de transmissao usa `App\Integrations\OpenAI\OpenAIBroadcastFinder`, tambem atras do contrato `App\Contracts\BroadcastFinder`.
+O fallback de transmissao usa `App\Contracts\AiBroadcastFinder`, uma especializacao de `App\Contracts\BroadcastFinder`. Os adaptadores `GeminiBroadcastFinder` e `OpenAIBroadcastFinder` convertem respostas externas para o DTO comum `App\Data\Broadcast\BroadcastSearchResult`. Assim, o resolvedor, banco, painel e API nao dependem do formato de uma API especifica.
 
-O comando `football:resolve-openai-broadcasts` processa somente partidas futuras com `resolution_status` `not_found`, `uncertain`, `conflicting` ou `error`. Ele aplica TTL para nao repetir pesquisa paga recentemente, salvo quando executado com `--force`.
+O provedor e escolhido por `AI_BROADCAST_PROVIDER=gemini` ou `AI_BROADCAST_PROVIDER=openai`. Gemini e o padrao para testes; OpenAI pode ser ativada sem alterar o codigo.
 
-A chamada usa Responses API com ferramenta de busca web e retorno estruturado por JSON Schema. A aplicacao ainda valida deterministicamente o resultado: `found` so e aceito quando existem canais e ao menos uma URL de evidencia rastreavel. Caso contrario, o resultado vira `uncertain`.
+O comando existente `football:resolve-openai-broadcasts` mantem compatibilidade com scripts anteriores, mas processa o provedor configurado para partidas futuras com `resolution_status` `not_found`, `uncertain`, `conflicting` ou `error`. Ele aplica TTL por provedor para nao repetir pesquisa recentemente, salvo quando executado com `--force`.
 
-As fontes, citacoes, resumo, tokens e quantidade de chamadas de busca sao preservados em `broadcast_sources`. Transmissoes vindas da OpenAI tambem permanecem em rascunho e aguardando revisao manual.
+OpenAI usa Responses API com ferramenta de busca web; Gemini usa `generateContent` com Google Search grounding. Ambos solicitam JSON estruturado e a aplicacao ainda valida deterministicamente o resultado: `found` so e aceito quando existem canais e ao menos uma URL de evidencia rastreavel. Caso contrario, o resultado vira `uncertain`.
+
+As fontes, citacoes, resumo, tokens e quantidade de chamadas de busca sao preservados em `broadcast_sources`. Transmissoes vindas de qualquer provedor de IA permanecem em rascunho e aguardando revisao manual.
 
 ### Automacao, cache e diagnostico
 
