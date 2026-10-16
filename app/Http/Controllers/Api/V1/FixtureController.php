@@ -17,8 +17,12 @@ class FixtureController
     {
         $request->validate([
             'date' => ['nullable', 'date_format:Y-m-d'],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
             'competition_id' => ['nullable', 'integer', 'min:1'],
             'team_id' => ['nullable', 'integer', 'min:1'],
+            'competition' => ['nullable', 'string', 'max:120'],
+            'team' => ['nullable', 'string', 'max:120'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:60'],
         ]);
@@ -31,6 +35,16 @@ class FixtureController
                     ->timezone('America/Sao_Paulo')
                     ->toDateString() === $request->string('date')->toString()
             ))
+            ->when($request->filled('from'), fn ($items) => $items->filter(
+                fn (FootballFixture $fixture): bool => $fixture->starts_at
+                    ->timezone('America/Sao_Paulo')
+                    ->toDateString() >= $request->string('from')->toString()
+            ))
+            ->when($request->filled('to'), fn ($items) => $items->filter(
+                fn (FootballFixture $fixture): bool => $fixture->starts_at
+                    ->timezone('America/Sao_Paulo')
+                    ->toDateString() <= $request->string('to')->toString()
+            ))
             ->when($request->filled('competition_id'), fn ($items) => $items->where(
                 'competition_id',
                 $request->integer('competition_id')
@@ -40,6 +54,21 @@ class FixtureController
                     $request->integer('team_id'),
                     [$fixture->home_team_id, $fixture->away_team_id],
                     true
+                )
+            ))
+            ->when($request->filled('competition'), fn ($items) => $items->filter(
+                fn (FootballFixture $fixture): bool => str_contains(
+                    mb_strtolower($fixture->competition?->name ?? ''),
+                    mb_strtolower($request->string('competition')->toString())
+                )
+            ))
+            ->when($request->filled('team'), fn ($items) => $items->filter(
+                fn (FootballFixture $fixture): bool => str_contains(
+                    mb_strtolower($fixture->homeTeam?->name ?? ''),
+                    mb_strtolower($request->string('team')->toString())
+                ) || str_contains(
+                    mb_strtolower($fixture->awayTeam?->name ?? ''),
+                    mb_strtolower($request->string('team')->toString())
                 )
             ))
             ->values();

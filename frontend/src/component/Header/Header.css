@@ -1,0 +1,12 @@
+.site-header { height: 70px; background: var(--paper); border-bottom: 1px solid #e8ece8; }
+.header-inner, .page, .footer-inner { width: min(100% - 40px, 940px); margin-inline: auto; }
+.header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; letter-spacing: -.3px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 6px; display: grid; place-items: center; background: var(--green); color: white; font-size: 12px; font-weight: 800; }
+@media (max-width: 680px) {
+  .site-header { height: auto; min-height: 62px; }
+  .header-inner, .page, .footer-inner { width: min(100% - 28px, 940px); }
+  .header-inner { padding-block: 12px; align-items: flex-start; flex-direction: column; gap: 11px; }
+  .main-nav { width: 100%; gap: 4px; }
+  .main-nav a { padding: 8px 9px; font-size: 11px; }
+}

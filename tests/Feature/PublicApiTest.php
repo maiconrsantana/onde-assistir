@@ -74,6 +74,9 @@ class PublicApiTest extends TestCase
             ->assertJsonPath('data.0.starts_at', '2026-09-20T22:30:00+00:00')
             ->assertJsonPath('data.0.starts_at_brasilia', '2026-09-20T19:30:00-03:00')
             ->assertJsonPath('data.0.timezone', 'America/Sao_Paulo')
+            ->assertJsonPath('data.0.status', $fixture->status)
+            ->assertJsonPath('data.0.home_team.crest', $fixture->homeTeam->logo_url)
+            ->assertJsonPath('data.0.away_team.crest', $fixture->awayTeam->logo_url)
             ->assertJsonPath('data.0.broadcasts.0.broadcaster.name', 'Canal API')
             ->assertJsonPath('data.0.broadcasts.0.source_url', 'https://example.com/onde-assistir')
             ->assertJsonPath('data.0.broadcasts.1.source_url', null)
@@ -97,5 +100,18 @@ class PublicApiTest extends TestCase
         $this->getJson('/api/v1/fixtures?date=20-09-2026&per_page=100')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['date', 'per_page']);
+    }
+
+    public function test_api_accepts_react_date_range_team_and_competition_filters(): void
+    {
+        $fixture = FootballFixture::factory()->create([
+            'starts_at' => Carbon::parse('2026-09-20 19:30:00', 'America/Sao_Paulo')->utc(),
+            'review_status' => FootballFixture::REVIEW_APPROVED,
+            'publication_status' => FootballFixture::PUBLICATION_PUBLISHED,
+        ]);
+
+        $this->getJson('/api/v1/fixtures?from=2026-09-20&to=2026-09-20&team='.$fixture->homeTeam->name.'&competition='.$fixture->competition->name)
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $fixture->id);
     }
 }

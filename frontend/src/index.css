@@ -1,0 +1,34 @@
+:root {
+  color-scheme: light;
+  --green: #087b4c;
+  --green-dark: #075d3b;
+  --ink: #17201b;
+  --muted: #68736c;
+  --line: #dfe5df;
+  --canvas: #f5f6f4;
+  --paper: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); }
+a { color: inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #e8a52e;
+  outline-offset: 3px;
+}
+h1 { margin: 0; font-size: 27px; letter-spacing: -.8px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; letter-spacing: -.3px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 6px; display: grid; place-items: center; background: var(--green); color: white; font-size: 12px; font-weight: 800; }
+nav { display: flex; align-items: center; gap: 8px; }
+.main-nav a { padding: 10px 13px; border-radius: 5px; text-decoration: none; color: #536057; font-size: 14px; font-weight: 600; }
+.main-nav a.active, .main-nav a:hover { color: var(--green-dark); background: #eef6f0; }
+.page { padding-block: 26px 42px; }
+.button { min-height: 40px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.button-dark { background: var(--ink); color: white; }
+.content { padding: 28px 30px 24px; background: var(--paper); border: 1px solid #e1e6e1; border-radius: 6px; }
+@media (max-width: 680px) {
+  h1 { font-size: 24px; }
+  .page { padding-block: 15px 30px; }
+  .button { min-height: 36px; font-size: 11px; }
+  .content { padding: 21px 14px 17px; }
+}
