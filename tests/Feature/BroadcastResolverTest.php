@@ -101,6 +101,7 @@ class BroadcastResolverTest extends TestCase
         $result = app(BroadcastResolver::class)->resolve([$fixture]);
 
         $this->assertSame(1, $result->notFound);
+        $this->assertSame(["Fixture {$fixture->id}: Sem transmissao."], $result->messages);
         $this->assertDatabaseCount('fixture_broadcasts', 0);
         $this->assertDatabaseHas('football_fixtures', [
             'id' => $fixture->id,

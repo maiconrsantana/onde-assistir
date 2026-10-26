@@ -54,6 +54,7 @@ function normalizeFixture(fixture) {
     competition: fixture.competition?.name || 'Competição não informada',
     stage: fixture.round || fixture.competition?.season || 'Rodada não informada',
     status: formatStatus(fixture.status),
+    finished: ['FT', 'AET', 'PEN'].includes(fixture.status),
     dateTime: startsAt,
     time: new Intl.DateTimeFormat('pt-BR', {
       hour: '2-digit',
@@ -100,5 +101,5 @@ function normalizeBroadcast(broadcast) {
 }
 
 function formatStatus(status) {
-  return { NS: 'Agendado', TBD: 'A confirmar', PST: 'Adiado', CANC: 'Cancelado' }[status] || status || 'A confirmar';
+  return { NS: 'Agendado', TBD: 'A confirmar', PST: 'Adiado', CANC: 'Cancelado', FT: 'Finalizado', AET: 'Finalizado após prorrogação', PEN: 'Finalizado nos pênaltis' }[status] || status || 'A confirmar';
 }

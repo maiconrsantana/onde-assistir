@@ -25,6 +25,8 @@ final readonly class BroadcastSearchResult
         public ?float $matchScore = null,
         public ?string $model = null,
         public ?int $tokensUsed = null,
+        public ?int $inputTokens = null,
+        public ?int $outputTokens = null,
         public ?int $webSearchCalls = null,
     ) {}
 

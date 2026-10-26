@@ -10,9 +10,25 @@ import SectionHeading from './component/Form/SectionHeading';
 import Results from './component/Games/Results';
 import { fetchFixtures } from './services/api';
 
+function formatDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function shiftDate(date, days) {
+  const shifted = new Date(date);
+  shifted.setDate(shifted.getDate() + days);
+  return shifted;
+}
+
+function shiftDateString(value, days) {
+  const [year, month, day] = value.split('-').map(Number);
+  return formatDate(shiftDate(new Date(year, month - 1, day), days));
+}
+
+const today = new Date();
 const initialFilters = {
-  startDate: new Date().toISOString().slice(0, 10),
-  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  startDate: formatDate(today),
+  endDate: formatDate(shiftDate(today, 7)),
   team: '',
   competition: '',
 };
@@ -23,6 +39,7 @@ function App() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [period, setPeriod] = useState('next');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -52,6 +69,19 @@ function App() {
     setAppliedFilters(filters);
   }
 
+  function applyPeriod(type) {
+    const offset = type === 'previous' ? -7 : 7;
+    const nextFilters = {
+      ...filters,
+      startDate: shiftDateString(filters.startDate, offset),
+      endDate: shiftDateString(filters.endDate, offset),
+    };
+
+    setFilters(nextFilters);
+    setAppliedFilters(nextFilters);
+    setPeriod(type);
+  }
+
   return (
     <>
       <main className="page" id="proximos">
@@ -59,7 +89,7 @@ function App() {
 
         <section className="content" aria-labelledby="page-title">
           <SectionHeading />
-          <Nav />
+          <Nav period={period} onPrevious={() => applyPeriod('previous')} onNext={() => applyPeriod('next')} />
           <Form filters={filters} onFilterChange={handleFilterChange} onSubmit={handleSubmit} />
           {loading && <p className="empty-results" role="status">Carregando partidas...</p>}
           {!loading && error && (
@@ -71,8 +101,8 @@ function App() {
           {!loading && !error && <Results matches={matches} />}
 
           <nav className="bottom-nav" aria-label="Navegação entre períodos">
-            <a className="button button-outline" href="#anteriores">← &nbsp;Voltar aos jogos anteriores</a>
-            <a className="button button-outline" href="#proximos">Avançar para próximos jogos &nbsp;→</a>
+            <button className="button button-outline" type="button" onClick={() => applyPeriod('previous')}>← &nbsp;Jogos anteriores</button>
+            <button className="button button-outline" type="button" onClick={() => applyPeriod('next')}>Próximos jogos&nbsp; →</button>
           </nav>
           <p className="notice">
             As informações de transmissão são exibidas quando publicadas. Confirme a programação com a emissora ou plataforma.

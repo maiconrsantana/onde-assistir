@@ -6,6 +6,7 @@ use App\Http\Resources\FixtureResource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
 use App\Services\PublicSchedule\PublishedFixtureSchedule;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,7 +28,20 @@ class FixtureController
             'per_page' => ['nullable', 'integer', 'min:1', 'max:60'],
         ]);
 
-        $fixtures = $schedule->upcoming();
+        $timezone = config('app.timezone', 'America/Sao_Paulo');
+        $rangeStart = $request->string('from', $request->string('date')->toString())->toString();
+        $rangeEnd = $request->string('to', $request->string('date')->toString())->toString();
+        $from = $rangeStart !== ''
+            ? CarbonImmutable::parse($rangeStart, $timezone)->startOfDay()
+            : CarbonImmutable::now($timezone)->startOfDay();
+        $to = $rangeEnd !== ''
+            ? CarbonImmutable::parse($rangeEnd, $timezone)->endOfDay()
+            : CarbonImmutable::now($timezone)->addDays(30)->endOfDay();
+
+        $hasExplicitRange = $request->filled('date') || $request->filled('from') || $request->filled('to');
+        $fixtures = $hasExplicitRange
+            ? $schedule->publishedBetween($from, $to)
+            : $schedule->upcoming();
 
         $fixtures = $fixtures
             ->when($request->filled('date'), fn ($items) => $items->filter(

@@ -12,7 +12,7 @@ class RefreshBroadcastsCommand extends Command
     protected $signature = 'football:refresh-broadcasts
         {--from= : Start date in YYYY-MM-DD format}
         {--to= : End date in YYYY-MM-DD format}
-        {--days=7 : Number of days to include when --to is not provided}
+        {--days=14 : Number of days to include when --to is not provided}
         {--sportsdb-limit=50 : Maximum number of TheSportsDB fixtures}
         {--openai-limit=10 : Maximum number of OpenAI fallback fixtures}';
 

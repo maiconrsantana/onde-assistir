@@ -3,7 +3,7 @@ function MatchCard({ match }) {
     <article className="fixture">
       <div className="fixture-head">
         <span>{match.competition} &nbsp;·&nbsp; {match.stage}</span>
-        <span className="status"><span aria-hidden="true">● &nbsp;</span>{match.status}</span>
+        <span className={`status${match.finished ? ' finished' : ''}`}><span aria-hidden="true">● &nbsp;</span>{match.status}</span>
       </div>
 
       <div className="match">

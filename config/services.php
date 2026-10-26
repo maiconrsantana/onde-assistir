@@ -77,6 +77,17 @@ return [
         'retry_sleep' => (int) env('GEMINI_RETRY_SLEEP', 1000),
     ],
 
+    'llm_prices' => [
+        'openai' => [
+            'input_per_million' => (float) env('OPENAI_INPUT_COST_PER_MILLION', 0),
+            'output_per_million' => (float) env('OPENAI_OUTPUT_COST_PER_MILLION', 0),
+        ],
+        'gemini' => [
+            'input_per_million' => (float) env('GEMINI_INPUT_COST_PER_MILLION', 0),
+            'output_per_million' => (float) env('GEMINI_OUTPUT_COST_PER_MILLION', 0),
+        ],
+    ],
+
     'ai' => [
         'broadcast_provider' => env('AI_BROADCAST_PROVIDER', 'gemini'),
     ],

@@ -114,4 +114,19 @@ class PublicApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.id', $fixture->id);
     }
+
+    public function test_api_date_filter_includes_published_fixture_that_has_already_finished(): void
+    {
+        $fixture = FootballFixture::factory()->create([
+            'starts_at' => Carbon::parse('2026-09-18 19:30:00', 'America/Sao_Paulo')->utc(),
+            'review_status' => FootballFixture::REVIEW_APPROVED,
+            'publication_status' => FootballFixture::PUBLICATION_PUBLISHED,
+            'status' => 'FT',
+        ]);
+
+        $this->getJson('/api/v1/fixtures?date=2026-09-18')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $fixture->id)
+            ->assertJsonCount(1, 'data');
+    }
 }

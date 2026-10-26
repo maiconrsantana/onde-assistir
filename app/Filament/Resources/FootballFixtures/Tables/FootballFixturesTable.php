@@ -2,25 +2,33 @@
 
 namespace App\Filament\Resources\FootballFixtures\Tables;
 
+use App\Enums\AutomationKey;
+use App\Enums\AutomationTriggerType;
+use App\Jobs\RunAutomationJob;
 use App\Models\FootballFixture;
 use App\Services\Operations\PublicScheduleCache;
 use App\Services\Publication\FixturePublicationApprover;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class FootballFixturesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('starts_at', 'desc')
             ->columns([
                 TextColumn::make('starts_at')
                     ->label('Data')
@@ -108,6 +116,18 @@ class FootballFixturesTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('resolve_ai')
+                    ->label('Buscar transmissão via IA')
+                    ->icon('heroicon-o-sparkles')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->action(function (FootballFixture $record): void {
+                        $provider = config('services.ai.broadcast_provider', 'gemini');
+                        $key = $provider === 'openai' ? AutomationKey::ResolveOpenAIBroadcasts : AutomationKey::ResolveGeminiBroadcasts;
+                        $date = $record->starts_at->timezone(config('app.timezone'))->toDateString();
+                        RunAutomationJob::dispatch($key, ['--from' => $date, '--to' => $date, '--fixture-id' => $record->getKey(), '--limit' => 1, '--force' => true], auth()->id(), AutomationTriggerType::Manual);
+                        Notification::make()->title('Busca de transmissão enfileirada')->body("Provedor: {$provider}. Você receberá uma notificação quando terminar.")->success()->send();
+                    }),
                 Action::make('approve_review')
                     ->label('Aprovar e publicar')
                     ->icon('heroicon-o-check')
@@ -132,6 +152,39 @@ class FootballFixturesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('change_resolution_status')
+                        ->label('Alterar resolução')
+                        ->icon('heroicon-o-arrow-path')
+                        ->form([
+                            Select::make('resolution_status')
+                                ->label('Novo status de resolução')
+                                ->options([
+                                    FootballFixture::RESOLUTION_PENDING => 'Pendente',
+                                    FootballFixture::RESOLUTION_PROCESSING => 'Processando',
+                                    FootballFixture::RESOLUTION_RESOLVED => 'Resolvida',
+                                    FootballFixture::RESOLUTION_NOT_FOUND => 'Não encontrada',
+                                    FootballFixture::RESOLUTION_UNCERTAIN => 'Incerta',
+                                    FootballFixture::RESOLUTION_CONFLICTING => 'Conflitante',
+                                    FootballFixture::RESOLUTION_ERROR => 'Erro',
+                                ])
+                                ->required(),
+                        ])
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->forceFill([
+                                    'resolution_status' => $data['resolution_status'],
+                                    'resolution_invalidated_at' => now()->utc(),
+                                ])->save();
+                            }
+
+                            Notification::make()
+                                ->title('Status atualizado')
+                                ->body("{$records->count()} partida(s) atualizada(s).")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

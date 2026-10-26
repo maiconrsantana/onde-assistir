@@ -42,6 +42,10 @@ class BroadcastResolver
 
                     $result->recordStatus($searchResult->status);
 
+                    if ($searchResult->status !== BroadcastSource::RESULT_FOUND && $searchResult->evidenceSummary !== null) {
+                        $result->recordMessage("Fixture {$fixture->id}: {$searchResult->evidenceSummary}");
+                    }
+
                     if ($searchResult->externalEventId !== null) {
                         $this->persistMapping($fixture, $searchResult);
                     }

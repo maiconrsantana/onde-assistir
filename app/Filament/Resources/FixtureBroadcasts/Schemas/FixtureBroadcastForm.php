@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FixtureBroadcasts\Schemas;
 
 use App\Models\FixtureBroadcast;
+use App\Models\FootballFixture;
 use App\Rules\ExternalHttpUrl;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class FixtureBroadcastForm
 {
@@ -22,7 +24,35 @@ class FixtureBroadcastForm
                     ->relationship('fixture', 'external_id')
                     ->getOptionLabelFromRecordUsing(fn ($record): string => "{$record->homeTeam?->name} x {$record->awayTeam?->name} - {$record->starts_at?->format('d/m/Y H:i')}")
                     ->searchable()
-                    ->preload()
+                    ->getSearchResultsUsing(function (?string $search): array {
+                        if (blank($search)) {
+                            return [];
+                        }
+
+                        $term = "%{$search}%";
+
+                        return FootballFixture::query()
+                            ->with(['homeTeam', 'awayTeam'])
+                            ->where(function (Builder $query) use ($term): void {
+                                $query
+                                    ->where('external_id', 'like', $term)
+                                    ->orWhereHas('homeTeam', fn (Builder $team): Builder => $team
+                                        ->where('name', 'like', $term)
+                                        ->orWhere('short_name', 'like', $term))
+                                    ->orWhereHas('awayTeam', fn (Builder $team): Builder => $team
+                                        ->where('name', 'like', $term)
+                                        ->orWhere('short_name', 'like', $term));
+                            })
+                            ->orderByDesc('starts_at')
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn (FootballFixture $fixture): array => [
+                                $fixture->getKey() => "{$fixture->homeTeam?->name} x {$fixture->awayTeam?->name} - {$fixture->starts_at?->format('d/m/Y H:i')}",
+                            ])
+                            ->all();
+                    })
+                    ->searchPrompt('Digite o nome de um time ou o ID da partida')
+                    ->noSearchResultsMessage('Nenhuma partida encontrada.')
                     ->required(),
                 Select::make('broadcaster_id')
                     ->label('Emissora')

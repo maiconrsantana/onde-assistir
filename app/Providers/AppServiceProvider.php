@@ -9,6 +9,9 @@ use App\Integrations\FootballData\FootballDataProvider as FootballDataHttpProvid
 use App\Integrations\Gemini\GeminiBroadcastFinder;
 use App\Integrations\OpenAI\OpenAIBroadcastFinder;
 use App\Integrations\TheSportsDb\TheSportsDbBroadcastFinder;
+use App\Models\FixtureBroadcast;
+use App\Models\FootballFixture;
+use App\Observers\PublicScheduleCacheObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -70,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        FootballFixture::observe(PublicScheduleCacheObserver::class);
+        FixtureBroadcast::observe(PublicScheduleCacheObserver::class);
     }
 }
