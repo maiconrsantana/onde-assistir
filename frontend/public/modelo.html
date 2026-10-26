@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f4">
+  <title>Onde Passa o Jogo — modelo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --green: #087b4c;
+      --green-dark: #075d3b;
+      --ink: #17201b;
+      --muted: #68736c;
+      --line: #dfe5df;
+      --canvas: #f5f6f4;
+      --paper: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #e8a52e; outline-offset: 3px;
+    }
+    .site-header { height: 70px; background: var(--paper); border-bottom: 1px solid #e8ece8; }
+    .header-inner, .page, .footer-inner { width: min(100% - 40px, 940px); margin-inline: auto; }
+    .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; letter-spacing: -.3px; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 6px; display: grid; place-items: center; background: var(--green); color: white; font-size: 12px; font-weight: 800; }
+    nav { display: flex; align-items: center; gap: 8px; }
+    .main-nav a { padding: 10px 13px; border-radius: 5px; text-decoration: none; color: #536057; font-size: 14px; font-weight: 600; }
+    .main-nav a.active, .main-nav a:hover { color: var(--green-dark); background: #eef6f0; }
+    .page { padding-block: 26px 42px; }
+    .ad-banner {
+      min-height: 142px; margin-bottom: 28px; padding: 25px 28px; position: relative;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      background: #eaf0e6; border: 1px solid #d9e2d7; border-radius: 6px;
+    }
+    .ad-label { position: absolute; top: 10px; right: 11px; padding: 4px 7px; border: 1px solid #c7d1c6; border-radius: 3px; background: #f8faf7; color: #566357; font-size: 10px; }
+    .ad-eyebrow, .kicker { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .ad-banner h2 { margin: 7px 0 5px; font-size: 21px; letter-spacing: -.5px; }
+    .ad-banner p { margin: 0; color: #59665c; font-size: 13px; }
+    .button { min-height: 40px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .button-dark { background: var(--ink); color: white; }
+    .content { padding: 28px 30px 24px; background: var(--paper); border: 1px solid #e1e6e1; border-radius: 6px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+    .kicker { margin: 0 0 6px; }
+    h1 { margin: 0; font-size: 27px; letter-spacing: -.8px; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+    .timezone { color: #354138; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .timezone small { display: block; margin-top: 4px; color: #78827b; font-size: 10px; font-weight: 500; }
+    .period-nav { margin-top: 23px; display: flex; gap: 22px; border-bottom: 1px solid var(--line); }
+    .period-nav a { padding-bottom: 12px; color: #68746b; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .period-nav a.active { color: var(--green); border-bottom: 3px solid var(--green); }
+    .filters { padding: 17px 0 15px; display: grid; grid-template-columns: 125px 125px 1fr 1fr auto; gap: 10px; align-items: end; }
+    .filters label { display: grid; gap: 6px; color: #536057; font-size: 11px; font-weight: 700; }
+    .filters input, .filters select { width: 100%; min-width: 0; height: 39px; padding: 0 9px; border: 1px solid #cfd8d0; border-radius: 4px; background: white; color: var(--ink); font: inherit; font-size: 12px; }
+    .filters button { height: 39px; padding-inline: 13px; border: 0; border-radius: 4px; background: var(--green); color: white; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .results { padding: 13px 0 10px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eef0ed; color: var(--muted); font-size: 12px; }
+    .results strong { color: var(--ink); font-size: 14px; }
+    .demo-label { padding: 5px 8px; border: 1px solid #d8e6db; border-radius: 16px; color: #477154; font-size: 10px; }
+    .day { margin-top: 12px; }
+    .day-title { margin: 0 0 8px; display: flex; align-items: center; justify-content: space-between; color: #38453c; font-size: 14px; text-transform: capitalize; }
+    .day-title small { color: #818b83; font-size: 11px; font-weight: 400; text-transform: none; }
+    .fixture { margin-bottom: 10px; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; }
+    .fixture-head { padding: 13px 16px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #48564b; font-size: 11px; font-weight: 700; }
+    .fixture-head .status { color: #69766b; font-size: 10px; font-weight: 500; }
+    .match { padding: 14px 16px 11px; display: grid; grid-template-columns: 62px 1fr; gap: 16px; align-items: center; }
+    .time { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .time small { display: block; margin-top: 4px; color: #7f8981; font-size: 9px; letter-spacing: .05em; }
+    .teams { display: grid; grid-template-columns: 1fr 22px 1fr; gap: 8px; align-items: center; }
+    .team { min-width: 0; display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; }
+    .team:last-child { justify-content: flex-end; }
+    .crest { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 1px solid #d8e4d9; border-radius: 50%; background: #edf4ee; color: var(--green-dark); font-size: 9px; font-weight: 800; }
+    .team-name { overflow-wrap: anywhere; }
+    .versus { text-align: center; color: #a2aaa3; font-size: 12px; }
+    .venue { padding: 0 16px 12px 94px; color: #536057; font-size: 11px; }
+    .broadcasts { padding: 10px 16px 12px; border-top: 1px solid #e8ede8; background: #f6f8f5; }
+    .broadcast-title { margin: 0 0 8px; color: #58645a; font-size: 10px; font-weight: 700; }
+    .broadcast-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .broadcast { padding: 6px 8px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid #e0e6df; border-radius: 4px; background: white; font-size: 10px; }
+    .broadcast strong { color: #29362c; }
+    .category { color: #58675b; }
+    .access { padding: 3px 5px; border-radius: 3px; background: #e7f4e9; color: #26743b; font-size: 9px; font-weight: 700; }
+    .access.paid { background: #f7efdc; color: #80601c; }
+    .no-broadcast { margin: 0; color: #7c5b22; font-size: 11px; }
+    .notice { margin: 15px 8px 0; color: #778178; text-align: center; font-size: 10px; line-height: 1.5; }
+    .bottom-nav { margin-top: 22px; display: flex; justify-content: space-between; gap: 10px; }
+    .button-outline { border: 1px solid #c8d8cb; background: white; color: #315b3c; }
+    footer { border-top: 1px solid #e3e8e3; background: white; }
+    .footer-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #7a847d; font-size: 10px; }
+    .footer-inner .brand { color: var(--ink); font-size: 12px; }
+    @media (max-width: 680px) {
+      .site-header { height: auto; min-height: 62px; }
+      .header-inner, .page, .footer-inner { width: min(100% - 28px, 940px); }
+      .header-inner { padding-block: 12px; align-items: flex-start; flex-direction: column; gap: 11px; }
+      .main-nav { width: 100%; gap: 4px; }
+      .main-nav a { padding: 8px 9px; font-size: 11px; }
+      .page { padding-block: 15px 30px; }
+      .ad-banner { min-height: 158px; padding: 28px 16px 15px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 12px; }
+      .ad-banner h2 { max-width: 290px; font-size: 18px; }
+      .ad-banner p { max-width: 270px; font-size: 12px; }
+      .button { min-height: 36px; font-size: 11px; }
+      .content { padding: 21px 14px 17px; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 11px; }
+      h1 { font-size: 24px; }
+      .subtitle { font-size: 12px; }
+      .timezone small { display: inline; margin-left: 6px; }
+      .period-nav { gap: 17px; }
+      .period-nav a { font-size: 11px; }
+      .filters { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .filters button { grid-column: 1 / -1; }
+      .results { gap: 8px; }
+      .fixture-head { padding-inline: 11px; font-size: 10px; }
+      .match { padding-inline: 11px; grid-template-columns: 47px 1fr; gap: 9px; }
+      .time { font-size: 17px; }
+      .teams { gap: 4px; grid-template-columns: 1fr 14px 1fr; }
+      .team, .team:last-child { flex-direction: column; justify-content: center; gap: 4px; text-align: center; font-size: 11px; line-height: 1.15; }
+      .crest { width: 33px; height: 33px; }
+      .venue { padding-left: 67px; padding-right: 10px; font-size: 10px; }
+      .broadcasts { padding-inline: 11px; }
+      .broadcast { gap: 5px; padding: 5px; font-size: 9px; }
+      .category { display: none; }
+      .bottom-nav { flex-direction: column; }
+      .bottom-nav a { min-height: 46px; }
+      .footer-inner { min-height: 76px; flex-wrap: wrap; justify-content: flex-start; padding-block: 12px; }
+      .footer-inner > span { margin-left: auto; }
+      .footer-inner > p { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#" aria-label="Onde Passa o Jogo — início">
+        <span class="brand-mark" aria-hidden="true">OP</span>
+        <span>Onde Passa <strong>o Jogo</strong></span>
+      </a>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a class="active" href="#proximos">Próximos jogos</a>
+        <a href="#anteriores">Jogos anteriores</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page" id="proximos">
+    <aside class="ad-banner" aria-label="Publicidade">
+      <!-- Troque este espaço por uma imagem, campanha HTML ou slot do sistema de anúncios. -->
+      <span class="ad-label">Publicidade</span>
+      <div>
+        <span class="ad-eyebrow">Parceiro da rodada</span>
+        <h2>Seu próximo rolê começa aqui.</h2>
+        <p>Conheça ofertas de mobilidade para acompanhar seu time.</p>
+      </div>
+      <a class="button button-dark" href="#ofertas">Ver ofertas <span aria-hidden="true">↗</span></a>
+    </aside>
+
+    <section class="content" aria-labelledby="page-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Guia de transmissão</p>
+          <h1 id="page-title">Próximos jogos</h1>
+          <p class="subtitle">Acompanhe a rodada e descubra onde assistir.</p>
+        </div>
+        <div class="timezone">◷ &nbsp;Horários de Brasília<small>America/Sao_Paulo</small></div>
+      </div>
+
+      <nav class="period-nav" aria-label="Período das partidas">
+        <a href="#anteriores">← Jogos anteriores</a>
+        <a class="active" href="#proximos">Próximos jogos →</a>
+      </nav>
+
+      <form class="filters" action="#proximos">
+        <label>De<input type="date" aria-label="Data inicial" value="2026-09-29"></label>
+        <label>Até<input type="date" aria-label="Data final" value="2026-10-05"></label>
+        <label>Time<input type="search" placeholder="Ex.: Palmeiras"></label>
+        <label>Competição<select><option>Todas as competições</option><option>Campeonato Brasileiro Série A</option><option>Copa do Brasil</option></select></label>
+        <button type="submit">Buscar jogos</button>
+      </form>
+
+      <div class="results"><span><strong>3</strong> partidas encontradas</span><span class="demo-label">● &nbsp;Dados de demonstração</span></div>
+
+      <section class="day" aria-label="terça-feira, 29 de setembro">
+        <h2 class="day-title"><span>terça-feira, 29 de setembro</span><small>2 jogos</small></h2>
+
+        <article class="fixture">
+          <div class="fixture-head"><span>Campeonato Brasileiro Série A &nbsp;·&nbsp; Rodada 28</span><span class="status">● &nbsp;Agendado</span></div>
+          <div class="match">
+            <time class="time" datetime="2026-09-29T19:00:00-03:00">19:00<small>BRT</small></time>
+            <div class="teams">
+              <div class="team"><span class="crest" aria-label="Escudo do Palmeiras">PAL</span><span class="team-name">Palmeiras</span></div>
+              <span class="versus" aria-hidden="true">×</span>
+              <div class="team"><span class="crest" aria-label="Escudo do Grêmio">GRE</span><span class="team-name">Grêmio</span></div>
+            </div>
+          </div>
+          <div class="venue">⌖ &nbsp;Allianz Parque · São Paulo, SP</div>
+          <div class="broadcasts">
+            <p class="broadcast-title">Onde assistir</p>
+            <div class="broadcast-list">
+              <span class="broadcast"><strong>TV Globo</strong><span class="category">TV aberta</span><span class="access">Gratuito</span></span>
+              <span class="broadcast"><strong>Premiere</strong><span class="category">Pay-per-view</span><span class="access paid">Pay-per-view</span></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="fixture">
+          <div class="fixture-head"><span>Campeonato Brasileiro Série A &nbsp;·&nbsp; Rodada 28</span><span class="status">● &nbsp;Agendado</span></div>
+          <div class="match">
+            <time class="time" datetime="2026-09-29T21:30:00-03:00">21:30<small>BRT</small></time>
+            <div class="teams">
+              <div class="team"><span class="crest" aria-label="Escudo do Flamengo">FLA</span><span class="team-name">Flamengo</span></div>
+              <span class="versus" aria-hidden="true">×</span>
+              <div class="team"><span class="crest" aria-label="Escudo do Fluminense">FLU</span><span class="team-name">Fluminense</span></div>
+            </div>
+          </div>
+          <div class="venue">⌖ &nbsp;Estádio e cidade não divulgados</div>
+          <div class="broadcasts">
+            <p class="broadcast-title">Onde assistir</p>
+            <p class="no-broadcast">Transmissão ainda não divulgada</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="day" aria-label="quinta-feira, 1 de outubro">
+        <h2 class="day-title"><span>quinta-feira, 1 de outubro</span><small>1 jogo</small></h2>
+        <article class="fixture">
+          <div class="fixture-head"><span>Copa do Brasil &nbsp;·&nbsp; Semifinal · jogo de volta</span><span class="status">● &nbsp;Agendado</span></div>
+          <div class="match">
+            <time class="time" datetime="2026-10-01T20:00:00-03:00">20:00<small>BRT</small></time>
+            <div class="teams">
+              <div class="team"><span class="crest" aria-label="Escudo do Fluminense">FLU</span><span class="team-name">Fluminense</span></div>
+              <span class="versus" aria-hidden="true">×</span>
+              <div class="team"><span class="crest" aria-label="Escudo do Palmeiras">PAL</span><span class="team-name">Palmeiras</span></div>
+            </div>
+          </div>
+          <div class="venue">⌖ &nbsp;Maracanã · Rio de Janeiro, RJ</div>
+          <div class="broadcasts">
+            <p class="broadcast-title">Onde assistir</p>
+            <div class="broadcast-list"><span class="broadcast"><strong>SporTV</strong><span class="category">TV fechada</span><span class="access paid">Assinatura</span></span></div>
+          </div>
+        </article>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Navegação entre períodos">
+        <a class="button button-outline" href="#anteriores">← &nbsp;Voltar aos jogos anteriores</a>
+        <a class="button button-outline" href="#proximos">Avançar para próximos jogos &nbsp;→</a>
+      </nav>
+      <p class="notice">As informações de transmissão são exibidas quando publicadas. Confirme a programação com a emissora ou plataforma.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <a class="brand" href="#"><span class="brand-mark" aria-hidden="true">OP</span><span>Onde Passa <strong>o Jogo</strong></span></a>
+      <p>Futebol na tela certa, sem perder o apito inicial.</p>
+      <span>© 2026 Onde Passa o Jogo</span>
+    </div>
+  </footer>
+</body>
+</html>

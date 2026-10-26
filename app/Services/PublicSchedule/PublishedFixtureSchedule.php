@@ -5,6 +5,7 @@ namespace App\Services\PublicSchedule;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
 use App\Services\Operations\PublicScheduleCache;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 
 class PublishedFixtureSchedule
@@ -20,30 +21,44 @@ class PublishedFixtureSchedule
     {
         return $this->cache->remember(function (): Collection {
             $timezone = config('app.timezone', 'America/Sao_Paulo');
-            $from = now($timezone)->startOfDay()->utc();
-            $to = now($timezone)->addDays(30)->endOfDay()->utc();
 
-            return FootballFixture::query()
-                ->with([
-                    'competition',
-                    'homeTeam',
-                    'awayTeam',
-                    'fixtureBroadcasts' => fn ($query) => $query
-                        ->where('country_code', 'BR')
-                        ->where('needs_review', false)
-                        ->where('review_status', FixtureBroadcast::REVIEW_APPROVED)
-                        ->where('publication_status', FixtureBroadcast::PUBLICATION_PUBLISHED)
-                        ->with('broadcaster')
-                        ->orderBy('access_type')
-                        ->orderBy('id'),
-                ])
-                ->where('publication_status', FootballFixture::PUBLICATION_PUBLISHED)
-                ->where('review_status', FootballFixture::REVIEW_APPROVED)
-                ->whereBetween('starts_at', [$from, $to])
-                ->orderBy('starts_at')
-                ->limit(120)
-                ->get();
+            return $this->queryBetween(
+                CarbonImmutable::now($timezone)->startOfDay(),
+                CarbonImmutable::now($timezone)->addDays(30)->endOfDay(),
+            );
         });
+    }
+
+    /** @return Collection<int, FootballFixture> */
+    public function publishedBetween(CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return $this->queryBetween($from, $to);
+    }
+
+    /** @return Collection<int, FootballFixture> */
+    private function queryBetween(CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return FootballFixture::query()
+            ->with([
+                'competition',
+                'homeTeam',
+                'awayTeam',
+                'fixtureBroadcasts' => fn ($query) => $query
+                    ->where('country_code', 'BR')
+                    ->where('needs_review', false)
+                    ->where('review_status', FixtureBroadcast::REVIEW_APPROVED)
+                    ->where('publication_status', FixtureBroadcast::PUBLICATION_PUBLISHED)
+                    ->with('broadcaster')
+                    ->orderBy('access_type')
+                    ->orderBy('id'),
+            ])
+            ->where('publication_status', FootballFixture::PUBLICATION_PUBLISHED)
+            ->where('review_status', FootballFixture::REVIEW_APPROVED)
+            ->whereBetween('starts_at', [$from->utc(), $to->utc()])
+            ->orderBy('starts_at')
+            ->limit(120)
+            ->get();
+
     }
 
     /**

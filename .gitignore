@@ -20,6 +20,11 @@
 /public/css/filament
 /public/fonts/filament
 /public/hot
+/public/app
+/frontend/node_modules
+/frontend/build
+/frontend/.env*
+!/frontend/.env.example
 /public/js/filament
 /public/storage
 /storage/*.key
@@ -29,3 +34,12 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# React production build published directly at the site root
+/public/static
+/public/asset-manifest.json
+/public/index.html
+/public/logo192.png
+/public/logo512.png
+/public/manifest.json
+/public/modelo.html

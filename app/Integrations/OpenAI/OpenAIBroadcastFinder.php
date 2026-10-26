@@ -10,6 +10,7 @@ use App\Models\Broadcaster;
 use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
+use App\Services\Llm\LlmCostService;
 use App\Support\ExternalUrl;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
@@ -42,11 +43,13 @@ class OpenAIBroadcastFinder implements AiBroadcastFinder
     public function findForFixture(FootballFixture $fixture): BroadcastSearchResult
     {
         $this->ensureConfigured();
+        app(LlmCostService::class)->assertCanCall(self::PROVIDER);
 
         $fixture->loadMissing(['competition', 'homeTeam', 'awayTeam', 'broadcastSources']);
 
         $queryHash = $this->queryHash($fixture);
         $payload = $this->createResponse($fixture);
+        app(LlmCostService::class)->recordSuccess(self::PROVIDER, $this->model, $fixture, $payload);
         $parsed = $this->parseStructuredOutput($payload);
         $citations = $this->extractCitations($payload);
         $evidence = $this->normalizeEvidence($parsed['evidence'] ?? [], $citations);
@@ -70,6 +73,8 @@ class OpenAIBroadcastFinder implements AiBroadcastFinder
             calculatedConfidence: $calculatedConfidence,
             model: $this->model,
             tokensUsed: data_get($payload, 'usage.total_tokens'),
+            inputTokens: data_get($payload, 'usage.input_tokens'),
+            outputTokens: data_get($payload, 'usage.output_tokens'),
             webSearchCalls: $this->webSearchCalls($payload),
         );
     }

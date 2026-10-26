@@ -36,3 +36,5 @@ Onde Passa o Jogo e uma aplicacao Laravel 12 para listar partidas, horarios e tr
 - Dados de transmissao sem fonte confiavel devem aparecer como "Transmissao ainda nao divulgada".
 - O modo padrao de publicacao e manual; a pagina publica so pode exibir registros publicados.
 - Atualizar `docs/PROJECT_STATUS.md` ao concluir cada etapa.
+
+- Worker de fila recomendado: `php artisan queue:work database --queue=automations --tries=1 --timeout=900`.

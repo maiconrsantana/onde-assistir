@@ -14,12 +14,27 @@ use App\Services\Operations\PublicScheduleCache;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class FixtureSynchronizerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::parse('2026-09-19 12:00:00', 'America/Sao_Paulo'));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     public function test_first_sync_creates_competition_teams_and_fixture(): void
     {

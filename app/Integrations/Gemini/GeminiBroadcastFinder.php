@@ -10,6 +10,7 @@ use App\Models\Broadcaster;
 use App\Models\BroadcastSource;
 use App\Models\FixtureBroadcast;
 use App\Models\FootballFixture;
+use App\Services\Llm\LlmCostService;
 use App\Support\ExternalUrl;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
@@ -38,9 +39,11 @@ class GeminiBroadcastFinder implements AiBroadcastFinder
     public function findForFixture(FootballFixture $fixture): BroadcastSearchResult
     {
         $this->ensureConfigured();
+        app(LlmCostService::class)->assertCanCall($this->provider());
         $fixture->loadMissing(['competition', 'homeTeam', 'awayTeam', 'broadcastSources']);
 
         $payload = $this->createResponse($fixture);
+        app(LlmCostService::class)->recordSuccess($this->provider(), $this->model, $fixture, $payload);
         $parsed = $this->parseStructuredOutput($payload);
         $evidence = $this->normalizeEvidence($parsed['evidence'] ?? [], $this->extractCitations($payload));
         $channels = $this->normalizeChannels($parsed['channels'] ?? []);
@@ -62,6 +65,8 @@ class GeminiBroadcastFinder implements AiBroadcastFinder
             calculatedConfidence: $this->calculateConfidence($status, $channels, $evidence),
             model: $this->model,
             tokensUsed: data_get($payload, 'usageMetadata.totalTokenCount'),
+            inputTokens: data_get($payload, 'usageMetadata.promptTokenCount'),
+            outputTokens: data_get($payload, 'usageMetadata.candidatesTokenCount'),
             webSearchCalls: $this->webSearchCalls($payload),
         );
     }

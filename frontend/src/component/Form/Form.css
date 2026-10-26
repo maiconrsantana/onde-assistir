@@ -1,0 +1,10 @@
+
+.filters { padding: 17px 0 15px; display: grid; grid-template-columns: 125px 125px 1fr 1fr auto; gap: 10px; align-items: end; }
+.filters label { display: grid; gap: 6px; color: #536057; font-size: 11px; font-weight: 700; }
+.filters input, .filters select { width: 100%; min-width: 0; height: 39px; padding: 0 9px; border: 1px solid #cfd8d0; border-radius: 4px; background: white; color: var(--ink); font: inherit; font-size: 12px; }
+.filters button { height: 39px; padding-inline: 13px; border: 0; border-radius: 4px; background: var(--green); color: white; font-size: 12px; font-weight: 700; cursor: pointer; }
+ 
+@media (max-width: 680px) {
+    .filters { grid-template-columns: 1fr 1fr; gap: 9px; }
+    .filters button { grid-column: 1 / -1; }
+}

@@ -130,4 +130,46 @@ class ResolveOpenAiBroadcastsCommandTest extends TestCase
 
         Http::assertNothingSent();
     }
+
+    public function test_command_can_process_a_single_fixture_by_id(): void
+    {
+        Config::set('services.openai.base_url', 'https://api.openai.test/v1');
+        Config::set('services.openai.key', 'test-key');
+        Config::set('services.openai.model', 'gpt-test');
+
+        $fixture = FootballFixture::factory()->create([
+            'starts_at' => '2026-09-19 15:00:00',
+            'resolution_status' => FootballFixture::RESOLUTION_PENDING,
+        ]);
+
+        Http::fake([
+            'https://api.openai.test/v1/responses' => Http::response([
+                'id' => 'resp-single',
+                'status' => 'completed',
+                'model' => 'gpt-test',
+                'output_text' => json_encode([
+                    'status' => 'not_found',
+                    'channels' => [],
+                    'evidence' => [],
+                    'summary' => 'Sem transmissao confirmada.',
+                    'confidence' => 0.2,
+                ], JSON_THROW_ON_ERROR),
+                'usage' => ['total_tokens' => 20],
+                'output' => [],
+            ]),
+        ]);
+
+        $this->artisan('football:resolve-openai-broadcasts', [
+            '--from' => '2026-09-19',
+            '--to' => '2026-09-19',
+            '--fixture-id' => $fixture->id,
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        $this->assertDatabaseHas('football_fixtures', [
+            'id' => $fixture->id,
+            'resolution_status' => FootballFixture::RESOLUTION_NOT_FOUND,
+        ]);
+        Http::assertSentCount(1);
+    }
 }

@@ -15,7 +15,7 @@ class ResolveBroadcastsCommand extends Command
     protected $signature = 'football:resolve-broadcasts
         {--from= : Start date in YYYY-MM-DD format}
         {--to= : End date in YYYY-MM-DD format}
-        {--days=7 : Number of days to include when --to is not provided}
+        {--days=14 : Number of days to include when --to is not provided}
         {--limit=50 : Maximum number of fixtures to process}
         {--status=pending : Resolution status to process, or all}';
 
@@ -42,6 +42,19 @@ class ResolveBroadcastsCommand extends Command
             ->get();
 
         $this->components->info("Resolvendo transmissoes de {$fixtures->count()} partida(s).");
+
+        if ($fixtures->isEmpty()) {
+            $message = $resolutionStatus === 'all'
+                ? "Nenhuma partida encontrada no periodo de {$from->toDateString()} ate {$to->toDateString()}."
+                : "Nenhuma partida com status de resolucao '{$resolutionStatus}' encontrada no periodo. Use --status=all para reprocessar outros status.";
+
+            $this->components->warn($message);
+            Log::info('football.resolve_broadcasts.no_fixtures', [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'status' => $resolutionStatus,
+            ]);
+        }
 
         $result = $resolver->resolve($fixtures);
 

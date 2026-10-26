@@ -19,8 +19,7 @@ class FootballAutomationTest extends TestCase
     public function test_scheduler_lists_daily_sync_and_broadcast_refresh(): void
     {
         $this->artisan('schedule:list')
-            ->expectsOutputToContain('football:sync --days=14')
-            ->expectsOutputToContain('football:refresh-broadcasts --days=7')
+            ->expectsOutputToContain('automation.dispatch-due')
             ->assertExitCode(0);
     }
 

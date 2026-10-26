@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AutomationKey;
+use App\Models\AutomationSetting;
 use App\Models\Broadcaster;
 use App\Models\BroadcastSource;
 use App\Models\Competition;
@@ -25,6 +27,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        foreach (AutomationKey::cases() as $automationKey) {
+            $definition = $automationKey->definition();
+
+            AutomationSetting::query()->firstOrCreate(
+                ['key' => $automationKey->value],
+                collect($definition)->except('key')->all(),
+            );
+        }
+
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',

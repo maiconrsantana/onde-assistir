@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Contracts\AiBroadcastFinder;
+use App\Models\BroadcastSource;
 use App\Models\FootballFixture;
 use App\Services\Broadcast\BroadcastResolver;
 use App\Services\Operations\FootballAutomationStatus;
@@ -18,6 +19,7 @@ class ResolveOpenAiBroadcastsCommand extends Command
         {--to= : End date in YYYY-MM-DD format}
         {--days=7 : Number of days to include when --to is not provided}
         {--limit=10 : Maximum number of fixtures to process}
+        {--fixture-id= : Process only this fixture ID}
         {--ttl-hours=24 : Hours to wait before repeating an OpenAI search}
         {--force : Ignore the OpenAI search TTL}';
 
@@ -39,22 +41,26 @@ class ResolveOpenAiBroadcastsCommand extends Command
         $ttlHours = max(1, (int) $this->option('ttl-hours'));
         $cutoff = now()->utc()->subHours($ttlHours);
         $provider = $finder->provider();
+        $fixtureId = $this->option('fixture-id');
 
         $fixtures = FootballFixture::query()
             ->with(['competition', 'homeTeam', 'awayTeam', 'broadcastSources'])
             ->whereBetween('starts_at', [$from->utc(), $to->utc()])
-            ->where('starts_at', '>=', now()->utc())
-            ->whereIn('resolution_status', [
-                FootballFixture::RESOLUTION_NOT_FOUND,
-                FootballFixture::RESOLUTION_UNCERTAIN,
-                FootballFixture::RESOLUTION_CONFLICTING,
-                FootballFixture::RESOLUTION_ERROR,
-            ])
+            ->when($fixtureId !== null, fn ($query) => $query->whereKey((int) $fixtureId))
+            ->when($fixtureId === null, fn ($query) => $query
+                ->where('starts_at', '>=', now()->utc())
+                ->whereIn('resolution_status', [
+                    FootballFixture::RESOLUTION_NOT_FOUND,
+                    FootballFixture::RESOLUTION_UNCERTAIN,
+                    FootballFixture::RESOLUTION_CONFLICTING,
+                    FootballFixture::RESOLUTION_ERROR,
+                ]))
             ->when(! $this->option('force'), fn ($query) => $query->whereDoesntHave(
                 'broadcastSources',
                 fn ($sourceQuery) => $sourceQuery
                     ->where('provider', $provider)
-                    ->where('queried_at', '>=', $cutoff),
+                    ->where('queried_at', '>=', $cutoff)
+                    ->whereIn('result_status', [BroadcastSource::RESULT_FOUND, BroadcastSource::RESULT_NOT_FOUND, BroadcastSource::RESULT_UNCERTAIN, BroadcastSource::RESULT_CONFLICTING]),
             ))
             ->orderBy('starts_at')
             ->limit($limit)
